@@ -1,0 +1,23 @@
+[project]
+name = "pl-cleanviz"
+version = "0.4.0"
+description = "Polars-only utilities: clean column names + correlation heatmap + distplot + missing values + save_fig + mini-profiler."
+authors = [{ name = "Anders & Co." }]
+requires-python = ">=3.9"
+dependencies = [
+  "polars>=0.20",
+  "matplotlib>=3.7"
+]
+readme = "README.md"
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+plotly = ["plotly>=5.20", "kaleido>=0.2"]
+altair = ["altair>=5"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
