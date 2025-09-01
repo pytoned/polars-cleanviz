@@ -76,13 +76,16 @@ def _distplot_matplotlib(s: pl.Series, column: str, bins: int, width, height):
     plt.close(fig)  # Prevent automatic display
     return fig
 
-def _missingval_plot_matplotlib(cols: List[str], ratios: List[float], counts: List[int], width, height):
+def _missingval_plot_matplotlib(cols: List[str], ratios: List[float], counts: List[int], width, height, normalize: bool = False):
     import matplotlib.pyplot as plt
     fig_w, fig_h = _px_to_inches(width, height, max(3.0, len(cols) * 0.25))
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     ax.barh(cols, ratios)
     for y, v, a in zip(range(len(cols)), ratios, counts):
-        ax.text(v, y, f" {a}", va="center")
+        if normalize:
+            ax.text(v, y, f" {v*100:.1f}%", va="center")
+        else:
+            ax.text(v, y, f" {a}", va="center")
     ax.set_xlabel("Share of missing")
     ax.set_ylabel("Columns")
     ax.set_title("Missing values per column")
@@ -112,9 +115,13 @@ def _distplot_plotly(s: pl.Series, column: str, bins: int, width, height):
                       width=width, height=height)
     return fig
 
-def _missingval_plot_plotly(cols: List[str], ratios: List[float], counts: List[int], width, height):
+def _missingval_plot_plotly(cols: List[str], ratios: List[float], counts: List[int], width, height, normalize: bool = False):
     import plotly.graph_objects as go
-    fig = go.Figure(data=[go.Bar(y=cols, x=ratios, orientation="h", text=counts, textposition="outside")])
+    if normalize:
+        text_values = [f"{r*100:.1f}%" for r in ratios]
+    else:
+        text_values = counts
+    fig = go.Figure(data=[go.Bar(y=cols, x=ratios, orientation="h", text=text_values, textposition="outside")])
     fig.update_layout(title="Missing values per column", xaxis_title="Share of missing",
                       yaxis_title="Columns", width=width, height=height)
     return fig
@@ -152,9 +159,13 @@ def _distplot_altair(s: pl.Series, column: str, bins: int, width, height):
     if height: chart = chart.properties(height=height)
     return chart
 
-def _missingval_plot_altair(cols: List[str], ratios: List[float], counts: List[int], width, height):
+def _missingval_plot_altair(cols: List[str], ratios: List[float], counts: List[int], width, height, normalize: bool = False):
     import altair as alt
-    data = [{"column": c, "ratio": r, "count": n} for c, r, n in zip(cols, ratios, counts)]
+    if normalize:
+        text_values = [f"{r*100:.1f}%" for r in ratios]
+    else:
+        text_values = counts
+    data = [{"column": c, "ratio": r, "count": n, "text_value": t} for c, r, n, t in zip(cols, ratios, counts, text_values)]
     df_data = pl.DataFrame(data)
     base = alt.Chart(df_data).mark_bar().encode(
         y=alt.Y("column:N", sort=None, title="Columns"),
@@ -164,7 +175,7 @@ def _missingval_plot_altair(cols: List[str], ratios: List[float], counts: List[i
     if width:  base = base.properties(width=width)
     if height: base = base.properties(height=height)
     text = alt.Chart(df_data).mark_text(align="left", baseline="middle", dx=3).encode(
-        y="column:N", x="ratio:Q", text="count:Q"
+        y="column:N", x="ratio:Q", text="text_value:N"
     )
     if width:  text = text.properties(width=width)
     if height: text = text.properties(height=height)
@@ -301,6 +312,7 @@ def missingval_plot(
     df: pl.DataFrame,
     *,
     sort: str = "desc",
+    normalize: bool = False,
     width: int | None = None,
     height: int | None = None,
     backend: str = "matplotlib",
@@ -308,6 +320,7 @@ def missingval_plot(
     """
     Plot missing-values per column.
     sort: 'desc'|'asc'|'none' to control column order by missing ratio.
+    normalize: if True, display percentages instead of absolute counts on bars.
     """
     cols = list(df.columns)
     if not cols:
@@ -343,10 +356,10 @@ def missingval_plot(
     counts_o = [counts[i] for i in order]
 
     if backend == "matplotlib":
-        return _missingval_plot_matplotlib(cols_o, ratios_o, counts_o, width, height)
+        return _missingval_plot_matplotlib(cols_o, ratios_o, counts_o, width, height, normalize)
     elif backend == "plotly":
-        return _missingval_plot_plotly(cols_o, ratios_o, counts_o, width, height)
+        return _missingval_plot_plotly(cols_o, ratios_o, counts_o, width, height, normalize)
     elif backend == "altair":
-        return _missingval_plot_altair(cols_o, ratios_o, counts_o, width, height)
+        return _missingval_plot_altair(cols_o, ratios_o, counts_o, width, height, normalize)
     else:
         raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
