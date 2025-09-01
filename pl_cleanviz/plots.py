@@ -256,7 +256,7 @@ def _corr_heatmap_plotly(cols: Sequence[str], mat: List[List[float]], annotate: 
         fig.update_layout(annotations=annotations)
     return fig
 
-def _distplot_plotly(s: pl.Series, column: str, bins: int, width, height):
+def _dist_plot_plotly(s: pl.Series, column: str, bins: int, width, height):
     import plotly.graph_objects as go
     fig = go.Figure(data=[go.Histogram(x=s.to_numpy(), nbinsx=bins)])
     fig.update_layout(title=f"Distribution: {column}", xaxis_title=column, yaxis_title="Count",
@@ -485,7 +485,7 @@ def _corr_heatmap_altair_enhanced(row_labels: list, col_labels: list, mat: List[
     
     return base
 
-def _distplot_altair(s: pl.Series, column: str, bins: int, width, height):
+def _dist_plot_altair(s: pl.Series, column: str, bins: int, width, height):
     import altair as alt
     data = [{column: v} for v in s.to_list()]
     df_data = pl.DataFrame(data)
@@ -887,7 +887,7 @@ def dist_plot(
     >>> import polars as pl
     >>> import pl_cleanviz as plc
     >>> df = pl.DataFrame({'age': [25, 30, 35, 40, 45, 50]})
-    >>> plc.distplot(df, column="age", bins=10, backend="plotly")
+    >>> plc.dist_plot(df, column="age", bins=10, backend="plotly")
     """
     cols = _numeric_columns(df)
     if column is None:
@@ -958,15 +958,14 @@ def dist_plot(
     if backend == "seaborn":
         return _dist_plot_seaborn(s, column, bins, width, height)
     elif backend == "plotly":
-        return _distplot_plotly(s, column, bins, width, height)
+        return _dist_plot_plotly(s, column, bins, width, height)
     elif backend == "altair":
-        return _distplot_altair(s, column, bins, width, height)
+        return _dist_plot_altair(s, column, bins, width, height)
     else:
         raise ValueError("backend must be 'seaborn', 'plotly', or 'altair'")
 
 
-# Backward compatibility alias
-distplot = dist_plot
+
 
 def missingval_plot(
     df: pl.DataFrame,

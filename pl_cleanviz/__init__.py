@@ -1,5 +1,5 @@
 from .clean import clean_column_names
-from .plots import corr_heatmap, dist_plot, distplot, missingval_plot, cat_plot, corr_plot, convert_datatypes, drop_missing, data_cleaning
+from .plots import corr_heatmap, dist_plot, missingval_plot, cat_plot, corr_plot, convert_datatypes, drop_missing, data_cleaning
 from .utils import save_fig
 from .xray import xray
 
@@ -10,8 +10,7 @@ __all__ = [
     "corr_heatmap",
     "corr_plot",       # New enhanced klib function
     "data_cleaning",   # New klib function
-    "dist_plot",       # New klib-compatible name
-    "distplot",        # Backward compatibility
+    "dist_plot",       # Distribution plotting
     "drop_missing",    # New klib function
     "missingval_plot",
     "save_fig",
