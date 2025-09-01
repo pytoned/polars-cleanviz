@@ -9,7 +9,7 @@ dependencies = [
   "matplotlib>=3.7"
 ]
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 
 [project.optional-dependencies]
 plotly = ["plotly>=5.20", "kaleido>=0.2"]
