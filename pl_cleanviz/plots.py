@@ -68,12 +68,14 @@ def _distplot_matplotlib(s: pl.Series, column: str, bins: int, width, height):
     import matplotlib.pyplot as plt
     fig_w, fig_h = _px_to_inches(width, height, 6.0)
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
-    ax.hist(s.to_numpy(), bins=bins)
+    ax.hist(s.to_numpy(), bins=bins, alpha=0.7, edgecolor='black', linewidth=0.5)
     ax.set_title(f"Distribution: {column}")
     ax.set_xlabel(column)
     ax.set_ylabel("Count")
+    ax.grid(True, alpha=0.3)
     fig.tight_layout()
-    plt.close(fig)  # Prevent automatic display
+    
+    # Don't close the figure - let it display in Jupyter
     return fig
 
 def _missingval_plot_matplotlib(cols: List[str], ratios: List[float], counts: List[int], width, height, normalize: bool = False):
@@ -254,7 +256,7 @@ def corr_heatmap(
     else:
         raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
 
-def distplot(
+def dist_plot(
     df: pl.DataFrame,
     column: str | None = None,
     *,
@@ -367,6 +369,10 @@ def distplot(
         return _distplot_altair(s, column, bins, width, height)
     else:
         raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
+
+
+# Backward compatibility alias
+distplot = dist_plot
 
 def missingval_plot(
     df: pl.DataFrame,

@@ -1,5 +1,5 @@
 from .clean import clean_column_names
-from .plots import corr_heatmap, distplot, missingval_plot
+from .plots import corr_heatmap, dist_plot, distplot, missingval_plot
 from .utils import save_fig
 from .profiler import profile_quick, save_profile
 from .profiling import profile_report, profile_config, ProfileReport, ProfileConfig
@@ -7,7 +7,8 @@ from .profiling import profile_report, profile_config, ProfileReport, ProfileCon
 __all__ = [
     "clean_column_names",
     "corr_heatmap",
-    "distplot",
+    "dist_plot",       # New klib-compatible name
+    "distplot",        # Backward compatibility
     "missingval_plot",
     "save_fig",
     "profile_quick",

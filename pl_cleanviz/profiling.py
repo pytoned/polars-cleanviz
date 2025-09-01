@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 import polars as pl
 
-from .plots import corr_heatmap, distplot, missingval_plot
+from .plots import corr_heatmap, dist_plot, missingval_plot
 from .utils import fig_to_base64_png
 
 
@@ -244,7 +244,7 @@ class profile_report:
         # distributions for a subset of numeric columns
         for c in num_cols[: self.config.max_numeric_dists]:
             try:
-                fig = distplot(df, column=c, bins=cfg.bins, backend="matplotlib")
+                fig = dist_plot(df, column=c, bins=cfg.bins, backend="matplotlib")
                 plots[f"dist__{c}"] = fig_to_base64_png(fig)
             except Exception:
                 continue

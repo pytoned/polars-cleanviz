@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Dict, Any
 import polars as pl
-from .plots import corr_heatmap, distplot, missingval_plot
+from .plots import corr_heatmap, dist_plot, missingval_plot
 
 def profile_quick(
     df: pl.DataFrame,
@@ -62,7 +62,7 @@ def profile_quick(
     plots = {
         "missing": missingval_plot(df, backend=backend, width=width, height=height),
         "corr": corr_heatmap(df, backend=backend, width=width, height=height),
-        "dist": distplot(df, column=dist_col, bins=bins, backend=backend, width=width, height=height),
+        "dist": dist_plot(df, column=dist_col, bins=bins, backend=backend, width=width, height=height),
     }
 
     return {
