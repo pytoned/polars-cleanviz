@@ -121,7 +121,8 @@ def _missingval_plot_plotly(cols: List[str], ratios: List[float], counts: List[i
 def _corr_heatmap_altair(cols: Sequence[str], mat: List[List[float]], annotate: bool, width, height):
     import altair as alt
     data = [{"row": r, "col": c, "r": mat[i][j]} for i, r in enumerate(cols) for j, c in enumerate(cols)]
-    base = alt.Chart(data).mark_rect().encode(
+    df_data = pl.DataFrame(data)
+    base = alt.Chart(df_data).mark_rect().encode(
         x=alt.X("col:N", title=None),
         y=alt.Y("row:N", title=None),
         color=alt.Color("r:Q", scale=alt.Scale(domain=[-1, 1]))
@@ -129,7 +130,7 @@ def _corr_heatmap_altair(cols: Sequence[str], mat: List[List[float]], annotate: 
     if width:  base = base.properties(width=width)
     if height: base = base.properties(height=height)
     if annotate:
-        text = alt.Chart(data).mark_text().encode(x="col:N", y="row:N", text=alt.Text("r:Q", format=".2f"))
+        text = alt.Chart(df_data).mark_text().encode(x="col:N", y="row:N", text=alt.Text("r:Q", format=".2f"))
         if width:  text = text.properties(width=width)
         if height: text = text.properties(height=height)
         return base + text
@@ -138,7 +139,8 @@ def _corr_heatmap_altair(cols: Sequence[str], mat: List[List[float]], annotate: 
 def _distplot_altair(s: pl.Series, column: str, bins: int, width, height):
     import altair as alt
     data = [{column: v} for v in s.to_list()]
-    chart = alt.Chart(data).mark_bar().encode(
+    df_data = pl.DataFrame(data)
+    chart = alt.Chart(df_data).mark_bar().encode(
         x=alt.X(f"{column}:Q", bin=alt.Bin(maxbins=bins)),
         y="count()",
         tooltip=[column]
@@ -150,14 +152,15 @@ def _distplot_altair(s: pl.Series, column: str, bins: int, width, height):
 def _missingval_plot_altair(cols: List[str], ratios: List[float], counts: List[int], width, height):
     import altair as alt
     data = [{"column": c, "ratio": r, "count": n} for c, r, n in zip(cols, ratios, counts)]
-    base = alt.Chart(data).mark_bar().encode(
+    df_data = pl.DataFrame(data)
+    base = alt.Chart(df_data).mark_bar().encode(
         y=alt.Y("column:N", sort=None, title="Columns"),
         x=alt.X("ratio:Q", title="Share of missing"),
         tooltip=["column", "count", "ratio"]
     ).properties(title="Missing values per column")
     if width:  base = base.properties(width=width)
     if height: base = base.properties(height=height)
-    text = alt.Chart(data).mark_text(align="left", baseline="middle", dx=3).encode(
+    text = alt.Chart(df_data).mark_text(align="left", baseline="middle", dx=3).encode(
         y="column:N", x="ratio:Q", text="count:Q"
     )
     if width:  text = text.properties(width=width)
@@ -189,7 +192,7 @@ def corr_heatmap(
                                                  width=width, height=height); return fig
         elif backend == "altair":
             import altair as alt
-            chart = alt.Chart({"values": []}).mark_rect()
+            chart = alt.Chart(pl.DataFrame({"values": []})).mark_rect()
             if width:  chart = chart.properties(width=width)
             if height: chart = chart.properties(height=height)
             return chart
@@ -231,7 +234,7 @@ def distplot(
                                                      width=width, height=height); return fig
             elif backend == "altair":
                 import altair as alt
-                chart = alt.Chart({"values": []}).mark_bar()
+                chart = alt.Chart(pl.DataFrame({"values": []})).mark_bar()
                 if width:  chart = chart.properties(width=width)
                 if height: chart = chart.properties(height=height)
                 return chart
@@ -251,7 +254,7 @@ def distplot(
                                                  width=width, height=height); return fig
         elif backend == "altair":
             import altair as alt
-            chart = alt.Chart({"values": []}).mark_bar()
+            chart = alt.Chart(pl.DataFrame({"values": []})).mark_bar()
             if width:  chart = chart.properties(width=width)
             if height: chart = chart.properties(height=height)
             return chart
@@ -271,7 +274,7 @@ def distplot(
                                                      width=width, height=height); return fig
             elif backend == "altair":
                 import altair as alt
-                chart = alt.Chart({"values": []}).mark_bar()
+                chart = alt.Chart(pl.DataFrame({"values": []})).mark_bar()
                 if width:  chart = chart.properties(width=width)
                 if height: chart = chart.properties(height=height)
                 return chart
@@ -316,7 +319,7 @@ def missingval_plot(
             fig = go.Figure(); fig.update_layout(title="No columns", width=width, height=height); return fig
         elif backend == "altair":
             import altair as alt
-            chart = alt.Chart({"values": []}).mark_bar()
+            chart = alt.Chart(pl.DataFrame({"values": []})).mark_bar()
             if width:  chart = chart.properties(width=width)
             if height: chart = chart.properties(height=height)
             return chart
