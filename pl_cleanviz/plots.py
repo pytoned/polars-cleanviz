@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Iterable, Sequence, Tuple, List, Optional
 import polars as pl
+import polars.selectors as cs
 
 # ---------- helpers ----------
 
@@ -115,7 +116,7 @@ def _missingval_plot_plotly(cols: List[str], ratios: List[float], counts: List[i
                       yaxis_title="Columns", width=width, height=height)
     return fig
 
-# ---------- Altair backends (no pandas) ----------
+# ---------- Altair backends ----------
 
 def _corr_heatmap_altair(cols: Sequence[str], mat: List[List[float]], annotate: bool, width, height):
     import altair as alt

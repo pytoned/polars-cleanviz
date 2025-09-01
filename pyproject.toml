@@ -1,6 +1,6 @@
 [project]
 name = "pl-cleanviz"
-version = "0.4.0"
+version = "0.4.1"
 description = "Polars-only utilities: clean column names + correlation heatmap + distplot + missing values + save_fig + mini-profiler."
 authors = [{ name = "Anders & Co." }]
 requires-python = ">=3.9"
