@@ -61,6 +61,7 @@ def _corr_heatmap_matplotlib(cols: Sequence[str], mat: List[List[float]], annota
             for j in range(n):
                 ax.text(j, i, f"{mat[i][j]:.2f}", ha="center", va="center")
     fig.tight_layout()
+    plt.close(fig)  # Prevent automatic display
     return fig
 
 def _distplot_matplotlib(s: pl.Series, column: str, bins: int, width, height):
@@ -72,6 +73,7 @@ def _distplot_matplotlib(s: pl.Series, column: str, bins: int, width, height):
     ax.set_xlabel(column)
     ax.set_ylabel("Count")
     fig.tight_layout()
+    plt.close(fig)  # Prevent automatic display
     return fig
 
 def _missingval_plot_matplotlib(cols: List[str], ratios: List[float], counts: List[int], width, height):
@@ -86,6 +88,7 @@ def _missingval_plot_matplotlib(cols: List[str], ratios: List[float], counts: Li
     ax.set_title("Missing values per column")
     ax.invert_yaxis()
     fig.tight_layout()
+    plt.close(fig)  # Prevent automatic display
     return fig
 
 # ---------- Plotly backends ----------
