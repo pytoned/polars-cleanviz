@@ -192,6 +192,36 @@ def corr_heatmap(
     height: int | None = None,
     backend: str = "matplotlib",
 ):
+    """
+    Create a correlation heatmap for numeric columns in a DataFrame.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame containing numeric columns to correlate.
+    columns : Sequence[str] | None, optional
+        Specific columns to include in correlation. If None, uses all numeric columns.
+    annotate : bool, default True
+        Whether to display correlation values as text on each cell.
+    width : int | None, optional
+        Width of the plot in pixels. If None, uses backend default.
+    height : int | None, optional
+        Height of the plot in pixels. If None, uses backend default.
+    backend : str, default "matplotlib"
+        Plotting backend to use. Options: "matplotlib", "plotly", "altair".
+
+    Returns
+    -------
+    Figure object
+        The correlation heatmap figure (type depends on backend).
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]})
+    >>> plc.corr_heatmap(df, backend="plotly", annotate=False)
+    """
     cols = _ensure_columns(df, columns)
     if len(cols) == 0:
         if backend == "matplotlib":
@@ -233,6 +263,36 @@ def distplot(
     height: int | None = None,
     backend: str = "matplotlib",
 ):
+    """
+    Create a distribution plot (histogram) for a numeric column.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame containing the column to plot.
+    column : str | None, optional
+        Name of the numeric column to plot. If None, uses the first numeric column.
+    bins : int, default 30
+        Number of histogram bins to use.
+    width : int | None, optional
+        Width of the plot in pixels. If None, uses backend default.
+    height : int | None, optional
+        Height of the plot in pixels. If None, uses backend default.
+    backend : str, default "matplotlib"
+        Plotting backend to use. Options: "matplotlib", "plotly", "altair".
+
+    Returns
+    -------
+    Figure object
+        The distribution plot figure (type depends on backend).
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'age': [25, 30, 35, 40, 45, 50]})
+    >>> plc.distplot(df, column="age", bins=10, backend="plotly")
+    """
     cols = _numeric_columns(df)
     if column is None:
         if not cols:
@@ -318,9 +378,35 @@ def missingval_plot(
     backend: str = "matplotlib",
 ):
     """
-    Plot missing-values per column.
-    sort: 'desc'|'asc'|'none' to control column order by missing ratio.
-    normalize: if True, display percentages instead of absolute counts on bars.
+    Create a horizontal bar plot showing missing values per column.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame to analyze for missing values.
+    sort : str, default "desc"
+        How to sort columns by missing value ratio. Options: "desc", "asc", "none".
+    normalize : bool, default False
+        If True, display percentages instead of absolute counts on bars.
+        Similar to normalize parameter in pandas value_counts().
+    width : int | None, optional
+        Width of the plot in pixels. If None, uses backend default.
+    height : int | None, optional
+        Height of the plot in pixels. If None, uses backend default.
+    backend : str, default "matplotlib"
+        Plotting backend to use. Options: "matplotlib", "plotly", "altair".
+
+    Returns
+    -------
+    Figure object
+        The missing values plot figure (type depends on backend).
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1, None, 3], 'b': [4, 5, None], 'c': [7, 8, 9]})
+    >>> plc.missingval_plot(df, normalize=True, backend="plotly")
     """
     cols = list(df.columns)
     if not cols:

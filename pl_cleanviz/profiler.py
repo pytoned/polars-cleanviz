@@ -13,7 +13,37 @@ def profile_quick(
     bins: int = 30,
 ) -> Dict[str, Any]:
     """
-    A minimal dataframe profiler: summary, dtypes, missing, and three plots.
+    Generate a quick profiling summary with basic statistics and plots.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame to profile.
+    backend : str, default "matplotlib"
+        Plotting backend to use. Options: "matplotlib", "plotly", "altair".
+    width : int | None, optional
+        Width of the plots in pixels. If None, uses backend default.
+    height : int | None, optional
+        Height of the plots in pixels. If None, uses backend default.
+    bins : int, default 30
+        Number of histogram bins for distribution plots.
+
+    Returns
+    -------
+    Dict[str, Any]
+        Dictionary containing:
+        - 'summary': Basic DataFrame statistics (n_rows, n_cols)
+        - 'dtypes': Column data types
+        - 'missing': Missing value information per column
+        - 'plots': Dictionary with 'missing', 'corr', and 'dist' plots
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1, 2, None], 'b': [4, 5, 6]})
+    >>> result = plc.profile_quick(df, backend="plotly")
+    >>> print(result['summary'])
     """
     n_rows, n_cols = df.height, df.width
     dtypes = {c: str(dt) for c, dt in zip(df.columns, df.dtypes)}

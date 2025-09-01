@@ -11,6 +11,26 @@ from .utils import fig_to_base64_png
 
 @dataclass
 class profile_config:
+    """
+    Configuration settings for profile reports.
+
+    Attributes
+    ----------
+    title : str, default "Polars Profile Report"
+        Title to display in the HTML report.
+    backend : str, default "matplotlib"
+        Plotting backend for embedded plots. Use "matplotlib" for PNG embeddings.
+    bins : int, default 30
+        Number of histogram bins for distribution plots.
+    max_numeric_dists : int, default 8
+        Maximum number of numeric distributions to show.
+    max_categorical_bars : int, default 8
+        Maximum number of categorical value counts to show.
+    sample_rows : int, default 10
+        Number of sample rows to display in the report.
+    infer_categorical_threshold : int, default 50
+        Treat string columns with cardinality <= this as categorical.
+    """
     title: str = "Polars Profile Report"
     backend: str = "matplotlib"  # use matplotlib for embedded PNGs
     bins: int = 30
@@ -22,28 +42,77 @@ class profile_config:
 
 class profile_report:
     """
-    Polars-only profiling report inspired by ydata-profiling, simplified.
+    Create comprehensive profiling reports for Polars DataFrames.
 
-    Provides basic table/variable stats, correlations, missingness, and
-    embeds plots as base64 PNG in a single self-contained HTML.
+    Generates detailed statistics, missing value analysis, correlations,
+    and visualizations in a self-contained HTML report.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The DataFrame to profile.
+    config : profile_config | None, optional
+        Configuration object. If None, uses default settings.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1, 2, None], 'b': [4, 5, 6]})
+    >>> report = plc.profile_report(df)
+    >>> report.to_file("report.html")
     """
 
     def __init__(self, df: pl.DataFrame, *, config: Optional[profile_config] = None):
         self.df = df
-        self.config = config or ProfileConfig()
+        self.config = config or profile_config()
         self._model: Dict[str, Any] = {}
 
     # --------- public API ---------
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Export the profile report as a dictionary.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing all profiling results including:
+            - 'config': Configuration settings
+            - 'table': Table-level statistics
+            - 'variables': Per-column analysis
+            - 'plots': Generated visualizations
+            - 'samples': Sample rows from the DataFrame
+        """
         if not self._model:
             self._model = self._build_model()
         return self._model
 
     def to_html(self) -> str:
+        """
+        Generate the profile report as an HTML string.
+
+        Returns
+        -------
+        str
+            Complete HTML document with embedded plots and styling.
+        """
         data = self.to_dict()
         return _render_html(data)
 
     def to_file(self, path: str) -> str:
+        """
+        Save the profile report as an HTML file.
+
+        Parameters
+        ----------
+        path : str
+            File path where to save the HTML report.
+
+        Returns
+        -------
+        str
+            The path where the file was saved.
+        """
         html = self.to_html()
         with open(path, "w", encoding="utf-8") as f:
             f.write(html)
