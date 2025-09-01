@@ -163,6 +163,34 @@ def _cat_plot_seaborn(cat_data: dict, width, height):
     fig.tight_layout()
     return fig
 
+def _corr_plot_seaborn(columns: list[str], corr_matrix, method: str, clustered: bool, width, height):
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    
+    fig_w, fig_h = _px_to_inches(width, height, 10.0)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    
+    # Create enhanced seaborn heatmap
+    sns.heatmap(
+        corr_matrix,
+        xticklabels=columns,
+        yticklabels=columns,
+        annot=True,
+        cmap='RdBu_r',
+        center=0,
+        square=True,
+        ax=ax,
+        cbar_kws={'label': f'{method.title()} Correlation'}
+    )
+    
+    title = f"{method.title()} Correlation Matrix"
+    if clustered:
+        title += " (Clustered)"
+    ax.set_title(title, fontsize=14, pad=20)
+    
+    plt.tight_layout()
+    return fig
+
 # ---------- Plotly backends ----------
 
 def _corr_heatmap_plotly(cols: Sequence[str], mat: List[List[float]], annotate: bool, width, height):
@@ -237,6 +265,40 @@ def _cat_plot_plotly(cat_data: dict, width, height):
         width=width or max(800, n_cols * 300),
         height=height or 500,
         showlegend=False
+    )
+    
+    return fig
+
+def _corr_plot_plotly(columns: list[str], corr_matrix: list, method: str, interactive: bool, clustered: bool, width, height):
+    import plotly.graph_objects as go
+    
+    # Enhanced interactive heatmap
+    fig = go.Figure(data=go.Heatmap(
+        z=corr_matrix,
+        x=columns,
+        y=columns,
+        colorscale='RdBu',
+        zmid=0,
+        zmin=-1,
+        zmax=1,
+        colorbar=dict(title=f"{method.title()}<br>Correlation"),
+        text=[[f"{val:.3f}" for val in row] for row in corr_matrix],
+        texttemplate="%{text}",
+        textfont={"size": 10},
+        hovertemplate='<b>%{y}</b> vs <b>%{x}</b><br>' +
+                     f'{method.title()} Correlation: %{{z:.3f}}<extra></extra>'
+    ))
+    
+    title = f"{method.title()} Correlation Matrix"
+    if clustered:
+        title += " (Clustered)"
+    
+    fig.update_layout(
+        title=title,
+        width=width or 700,
+        height=height or 600,
+        xaxis=dict(side="bottom"),
+        yaxis=dict(autorange="reversed")
     )
     
     return fig
@@ -341,6 +403,37 @@ def _cat_plot_altair(cat_data: dict, width, height):
     )
     
     if width: chart = chart.properties(width=width // len(cat_data))
+    if height: chart = chart.properties(height=height)
+    
+    return chart
+
+def _corr_plot_altair(columns: list[str], corr_matrix: list, method: str, width, height):
+    import altair as alt
+    
+    # Prepare data for altair
+    data = []
+    for i, row_name in enumerate(columns):
+        for j, col_name in enumerate(columns):
+            data.append({
+                "row": row_name,
+                "col": col_name,
+                "correlation": corr_matrix[i][j]
+            })
+    
+    df_data = pl.DataFrame(data)
+    
+    chart = alt.Chart(df_data).mark_rect().encode(
+        x=alt.X('col:N', title='Variables'),
+        y=alt.Y('row:N', title='Variables'),
+        color=alt.Color('correlation:Q', 
+                       scale=alt.Scale(scheme='redblue', domain=[-1, 1]),
+                       legend=alt.Legend(title=f'{method.title()} Correlation')),
+        tooltip=['row', 'col', 'correlation']
+    ).properties(
+        title=f"{method.title()} Correlation Matrix"
+    )
+    
+    if width: chart = chart.properties(width=width)
     if height: chart = chart.properties(height=height)
     
     return chart
@@ -721,3 +814,397 @@ def cat_plot(
         return _cat_plot_altair(cat_data, width, height)
     else:
         raise ValueError("backend must be 'seaborn', 'plotly', or 'altair'")
+
+
+def convert_datatypes(
+    df: pl.DataFrame,
+    *,
+    max_cardinality: int = 20,
+    categorical_threshold: float = 0.5,
+    str_to_cat: bool = True,
+    downcast_ints: bool = True,
+    downcast_floats: bool = True,
+) -> pl.DataFrame:
+    """
+    Optimize DataFrame data types to reduce memory usage.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame to optimize.
+    max_cardinality : int, default 20
+        Maximum unique values for converting strings to categorical.
+    categorical_threshold : float, default 0.5
+        Threshold for categorical conversion (unique/total ratio).
+    str_to_cat : bool, default True
+        Convert eligible string columns to categorical.
+    downcast_ints : bool, default True
+        Downcast integer columns to smallest possible type.
+    downcast_floats : bool, default True
+        Downcast float columns to smallest possible type.
+
+    Returns
+    -------
+    pl.DataFrame
+        DataFrame with optimized data types.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1, 2, 3], 'b': ['x', 'y', 'x']})
+    >>> df_opt = plc.convert_datatypes(df)
+    """
+    result = df.clone()
+    
+    for col in df.columns:
+        dtype = df[col].dtype
+        series = df[col]
+        
+        # Skip if already optimal or contains nulls (for simplicity)
+        if series.null_count() > 0:
+            continue
+            
+        # Convert strings to categorical if beneficial
+        if str_to_cat and dtype in (pl.String, pl.Utf8):
+            unique_count = series.n_unique()
+            total_count = len(series)
+            
+            if (unique_count <= max_cardinality and 
+                unique_count / total_count <= categorical_threshold):
+                result = result.with_columns(series.cast(pl.Categorical).alias(col))
+                
+        # Downcast integers
+        elif downcast_ints and dtype.is_integer():
+            min_val = series.min()
+            max_val = series.max()
+            
+            # Choose smallest integer type that fits the range
+            if min_val >= 0:  # Unsigned
+                if max_val <= 255:
+                    result = result.with_columns(series.cast(pl.UInt8).alias(col))
+                elif max_val <= 65535:
+                    result = result.with_columns(series.cast(pl.UInt16).alias(col))
+                elif max_val <= 4294967295:
+                    result = result.with_columns(series.cast(pl.UInt32).alias(col))
+            else:  # Signed
+                if min_val >= -128 and max_val <= 127:
+                    result = result.with_columns(series.cast(pl.Int8).alias(col))
+                elif min_val >= -32768 and max_val <= 32767:
+                    result = result.with_columns(series.cast(pl.Int16).alias(col))
+                elif min_val >= -2147483648 and max_val <= 2147483647:
+                    result = result.with_columns(series.cast(pl.Int32).alias(col))
+                    
+        # Downcast floats  
+        elif downcast_floats and dtype.is_float():
+            # Check if all values can fit in float32
+            try:
+                series_f32 = series.cast(pl.Float32)
+                if (series_f32.cast(pl.Float64) == series).all():
+                    result = result.with_columns(series_f32.alias(col))
+            except:
+                pass  # Keep original type if conversion fails
+                
+    return result
+
+
+def drop_missing(
+    df: pl.DataFrame,
+    *,
+    axis: str = "rows",
+    thresh: float | None = None,
+    subset: list[str] | None = None,
+) -> pl.DataFrame:
+    """
+    Drop rows or columns with missing values.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame.
+    axis : str, default "rows"
+        Whether to drop "rows" or "columns" with missing values.
+    thresh : float | None, optional
+        Threshold for dropping. If float, interpreted as percentage of
+        non-null values required (0.0 to 1.0). If None, drop any with nulls.
+    subset : list[str] | None, optional
+        Specific columns to consider for row dropping, or specific rows
+        to consider for column dropping.
+
+    Returns
+    -------
+    pl.DataFrame
+        DataFrame with missing values dropped.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1, None, 3], 'b': [1, 2, None]})
+    >>> plc.drop_missing(df, axis="rows")  # Drop rows with any nulls
+    >>> plc.drop_missing(df, axis="columns", thresh=0.8)  # Keep cols with >80% data
+    """
+    if axis == "rows":
+        if subset:
+            # Consider only specific columns for dropping rows
+            if thresh is None:
+                # Drop rows where any of the subset columns are null
+                return df.filter(~pl.any_horizontal([pl.col(c).is_null() for c in subset]))
+            else:
+                # Drop rows where less than thresh fraction of subset columns are non-null
+                required_count = int(thresh * len(subset))
+                return df.filter(
+                    pl.sum_horizontal([pl.col(c).is_not_null().cast(pl.Int32) for c in subset]) >= required_count
+                )
+        else:
+            # Consider all columns
+            if thresh is None:
+                # Drop rows with any null values
+                return df.filter(~pl.any_horizontal([pl.col(c).is_null() for c in df.columns]))
+            else:
+                # Drop rows where less than thresh fraction of columns are non-null
+                required_count = int(thresh * len(df.columns))
+                return df.filter(
+                    pl.sum_horizontal([pl.col(c).is_not_null().cast(pl.Int32) for c in df.columns]) >= required_count
+                )
+                
+    elif axis == "columns":
+        cols_to_keep = []
+        total_rows = len(df)
+        
+        for col in df.columns:
+            non_null_count = df[col].drop_nulls().len()
+            
+            if thresh is None:
+                # Keep columns with no null values
+                if non_null_count == total_rows:
+                    cols_to_keep.append(col)
+            else:
+                # Keep columns where non-null ratio >= thresh
+                if non_null_count / total_rows >= thresh:
+                    cols_to_keep.append(col)
+                    
+        return df.select(cols_to_keep) if cols_to_keep else df.select([])
+        
+    else:
+        raise ValueError("axis must be 'rows' or 'columns'")
+
+
+def corr_plot(
+    df: pl.DataFrame,
+    columns: list[str] | None = None,
+    *,
+    method: str = "pearson",
+    interactive: bool = True,
+    clustered: bool = False,
+    width: int | None = None,
+    height: int | None = None,
+    backend: str = "plotly",
+) -> object:
+    """
+    Create enhanced correlation plots with multiple visualization options.
+    
+    Combines functionality of klib's corr_mat and corr_interactive_plot.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame.
+    columns : list[str] | None, optional
+        Specific columns to include. If None, uses all numeric columns.
+    method : str, default "pearson"
+        Correlation method ("pearson", "spearman").
+    interactive : bool, default True
+        Whether to create interactive plots (plotly) or static (seaborn/altair).
+    clustered : bool, default False
+        Whether to cluster correlations by similarity.
+    width : int | None, optional
+        Plot width in pixels.
+    height : int | None, optional
+        Plot height in pixels.
+    backend : str, default "plotly"
+        Plotting backend ("plotly", "seaborn", "altair").
+
+    Returns
+    -------
+    Figure object
+        Enhanced correlation plot with interactivity and clustering options.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1,2,3], 'b': [2,4,6], 'c': [1,3,2]})
+    >>> plc.corr_plot(df, interactive=True, clustered=True)
+    """
+    # Get numeric columns
+    if columns is None:
+        columns = _numeric_columns(df)
+    else:
+        columns = _ensure_columns(df, columns)
+    
+    if len(columns) < 2:
+        raise ValueError("Need at least 2 numeric columns for correlation plot")
+    
+    # Calculate correlation matrix
+    df_numeric = df.select(columns)
+    
+    if method == "pearson":
+        # Use Polars built-in correlation  
+        corr_df = df_numeric.corr()
+    elif method == "spearman":
+        # Rank-based correlation (Spearman)
+        ranked_df = df_numeric.select([
+            pl.col(c).rank().alias(c) for c in columns
+        ])
+        corr_df = ranked_df.corr()
+    else:
+        raise ValueError("method must be 'pearson' or 'spearman'")
+    
+    # Convert to matrix format
+    corr_matrix = corr_df.to_numpy()
+    
+    # Clustering logic
+    if clustered:
+        # Simple hierarchical clustering of correlations
+        try:
+            from scipy.cluster.hierarchy import linkage, dendrogram, leaves_list
+            from scipy.spatial.distance import squareform
+            
+            # Convert correlation to distance
+            distance_matrix = 1 - abs(corr_matrix)
+            condensed_distances = squareform(distance_matrix, checks=False)
+            
+            # Perform clustering
+            linkage_matrix = linkage(condensed_distances, method='average')
+            cluster_order = leaves_list(linkage_matrix)
+            
+            # Reorder matrix and columns
+            corr_matrix = corr_matrix[cluster_order][:, cluster_order]
+            columns = [columns[i] for i in cluster_order]
+            
+        except ImportError:
+            print("scipy not available, skipping clustering")
+    
+    # Choose appropriate backend based on interactivity preference
+    if interactive and backend != "plotly":
+        backend = "plotly"  # Force plotly for interactivity
+    
+    # Use enhanced backends with additional features
+    if backend == "plotly":
+        return _corr_plot_plotly(columns, corr_matrix.tolist(), method, interactive, clustered, width, height)
+    elif backend == "seaborn":
+        return _corr_plot_seaborn(columns, corr_matrix, method, clustered, width, height)
+    elif backend == "altair":
+        return _corr_plot_altair(columns, corr_matrix.tolist(), method, width, height)
+    else:
+        raise ValueError("backend must be 'plotly', 'seaborn', or 'altair'")
+
+
+def data_cleaning(
+    df: pl.DataFrame,
+    *,
+    drop_missing_thresh: float = 0.9,
+    optimize_dtypes: bool = True,
+    remove_duplicates: bool = True,
+    outlier_method: str | None = "iqr",
+    outlier_threshold: float = 1.5,
+    categorical_threshold: float = 0.5,
+    max_cardinality: int = 50,
+) -> pl.DataFrame:
+    """
+    Comprehensive data cleaning pipeline.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The input DataFrame to clean.
+    drop_missing_thresh : float, default 0.9
+        Threshold for dropping columns with missing values (keep if >= thresh).
+    optimize_dtypes : bool, default True
+        Whether to optimize data types for memory efficiency.
+    remove_duplicates : bool, default True
+        Whether to remove duplicate rows.
+    outlier_method : str | None, default "iqr"
+        Method for outlier detection ("iqr", "zscore", None).
+    outlier_threshold : float, default 1.5
+        Threshold for outlier detection (IQR multiplier or Z-score).
+    categorical_threshold : float, default 0.5
+        Threshold for converting strings to categorical.
+    max_cardinality : int, default 50
+        Maximum unique values for categorical conversion.
+
+    Returns
+    -------
+    pl.DataFrame
+        Cleaned DataFrame.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import pl_cleanviz as plc
+    >>> df = pl.DataFrame({'a': [1, 1, None, 100], 'b': ['x', 'y', 'x', 'x']})
+    >>> df_clean = plc.data_cleaning(df)
+    """
+    result = df.clone()
+    
+    print(f"Starting data cleaning: {result.shape}")
+    
+    # 1. Remove columns with too many missing values
+    result = drop_missing(result, axis="columns", thresh=drop_missing_thresh)
+    print(f"After dropping sparse columns: {result.shape}")
+    
+    # 2. Remove duplicate rows
+    if remove_duplicates:
+        before_rows = len(result)
+        result = result.unique()
+        after_rows = len(result)
+        if before_rows != after_rows:
+            print(f"Removed {before_rows - after_rows} duplicate rows")
+    
+    # 3. Handle outliers in numeric columns
+    if outlier_method:
+        numeric_cols = _numeric_columns(result)
+        
+        for col in numeric_cols:
+            series = result[col]
+            
+            if outlier_method == "iqr":
+                Q1 = series.quantile(0.25)
+                Q3 = series.quantile(0.75)
+                IQR = Q3 - Q1
+                lower_bound = Q1 - outlier_threshold * IQR
+                upper_bound = Q3 + outlier_threshold * IQR
+                
+                # Replace outliers with null
+                result = result.with_columns(
+                    pl.when((pl.col(col) < lower_bound) | (pl.col(col) > upper_bound))
+                    .then(None)
+                    .otherwise(pl.col(col))
+                    .alias(col)
+                )
+                
+            elif outlier_method == "zscore":
+                mean_val = series.mean()
+                std_val = series.std()
+                
+                if std_val > 0:
+                    # Replace outliers with null (Z-score > threshold)
+                    result = result.with_columns(
+                        pl.when(((pl.col(col) - mean_val) / std_val).abs() > outlier_threshold)
+                        .then(None)
+                        .otherwise(pl.col(col))
+                        .alias(col)
+                    )
+    
+    # 4. Optimize data types
+    if optimize_dtypes:
+        result = convert_datatypes(
+            result,
+            categorical_threshold=categorical_threshold,
+            max_cardinality=max_cardinality
+        )
+        print(f"Data types optimized")
+    
+    print(f"Data cleaning complete: {result.shape}")
+    return result
