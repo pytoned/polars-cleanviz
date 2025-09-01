@@ -13,7 +13,7 @@ except ImportError:
     stats = None
 
 
-def summary(
+def xray(
     df: pl.DataFrame,
     *,
     great_tables: bool = True,
@@ -29,13 +29,19 @@ def summary(
     skew_threshold: float = 2.0,
     kurtosis_threshold: float = 7.0,
     outlier_threshold: float = 0.05,
-    shakiness_threshold: int = 2
+    shakiness_threshold: int = 2,
+    decimals: int = 2,
+    sep_mark: str = ",",
+    dec_mark: str = ".",
+    compact: bool = False,
+    pattern: str | None = None,
+    locale: str | None = None
 ) -> Union[GT, pl.DataFrame]:
     """
-    Generate a comprehensive statistical summary with data quality assessment.
+    X-ray your data: comprehensive statistical analysis with quality assessment.
     
-    This function provides a detailed analysis of DataFrame columns including
-    basic statistics, advanced metrics, normality tests, and data quality flags.
+    This function provides deep insight into DataFrame structure and quality,
+    revealing hidden issues, statistical properties, and data health indicators.
     Perfect for exploratory data analysis and data quality assessment.
 
     Parameters
@@ -84,6 +90,19 @@ def summary(
         Threshold for flagging outlier-heavy columns (0.05 = 5%).
     shakiness_threshold : int, default 2
         Minimum score to flag column as "shaky" for parametric models.
+    decimals : int, default 2
+        Number of decimal places for numeric formatting in Great Tables output.
+    sep_mark : str, default ","
+        Thousands separator mark for numeric formatting (e.g., "1,000").
+    dec_mark : str, default "."
+        Decimal mark for numeric formatting (e.g., "1.23").
+    compact : bool, default False
+        If True, large numbers are auto-scaled with suffixes (e.g., "10K", "1.5M").
+    pattern : str | None, optional
+        Text pattern for decorating formatted values (e.g., "[{x}]").
+    locale : str | None, optional
+        Locale ID for region-specific formatting (e.g., "en", "fr", "de-AT").
+        Overrides sep_mark and dec_mark when specified.
 
     Returns
     -------
@@ -93,7 +112,7 @@ def summary(
 
     Examples
     --------
-    Basic summary (minimal metrics):
+    Basic data X-ray (minimal metrics):
     
     >>> import polars as pl
     >>> import pl_cleanviz as plc
@@ -102,16 +121,16 @@ def summary(
     ...     'volume': [1000, 1500, 1200, 2000, 1800],
     ...     'rating': [4.5, 3.8, 4.2, 4.9, 4.1]
     ... })
-    >>> table = plc.summary(df)
+    >>> table = plc.xray(df)
     >>> table.show()
     
-    Comprehensive analysis:
+    Comprehensive data analysis:
     
-    >>> full_summary = plc.summary(df, expanded=True)
+    >>> full_xray = plc.xray(df, expanded=True)
     
     With correlation and custom tests:
     
-    >>> advanced_summary = plc.summary(
+    >>> advanced_xray = plc.xray(
     ...     df, 
     ...     expanded=True,
     ...     corr_target='price',
@@ -121,11 +140,21 @@ def summary(
     
     Custom quality thresholds:
     
-    >>> quality_summary = plc.summary(
+    >>> quality_xray = plc.xray(
     ...     df,
     ...     missing_threshold=0.2,  # Flag >20% missing
     ...     skew_threshold=1.5,     # Flag |skew| > 1.5
     ...     shakiness_threshold=1   # Flag any quality issue
+    ... )
+    
+    Advanced formatting options:
+    
+    >>> formatted_xray = plc.xray(
+    ...     df,
+    ...     decimals=3,            # 3 decimal places
+    ...     compact=True,          # Use "10K" instead of "10,000"
+    ...     locale="fr",           # French formatting
+    ...     pattern="({x})"        # Wrap values in parentheses
     ... )
 
     Notes
@@ -317,7 +346,7 @@ def summary(
     # Build Great Tables object
     if expanded:
         # Full statistics mode
-        return _build_expanded_gt_table(summary_df, df.height, corr_target, percentiles)
+        return _build_expanded_gt_table(summary_df, df.height, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern, locale)
     else:
         # Minimal mode - only essential columns
         essential_cols = ['Column', 'Dtype', 'Count', 'Mean', 'Min', 'Median', 'Max', 
@@ -338,7 +367,7 @@ def summary(
         available_cols += quantile_cols
         
         minimal_df = summary_df.select(available_cols)
-        return _build_minimal_gt_table(minimal_df, df.height, corr_target)
+        return _build_minimal_gt_table(minimal_df, df.height, corr_target, decimals, sep_mark, dec_mark, compact, pattern, locale)
 
 
 # Helper Functions
@@ -598,7 +627,17 @@ def _count_outliers(series: pl.Series, method: str, bounds: list[float] | None) 
     return int(mask.sum())
 
 
-def _build_minimal_gt_table(summary_df: pl.DataFrame, n_rows: int, corr_target: str | None) -> GT:
+def _build_minimal_gt_table(
+    summary_df: pl.DataFrame, 
+    n_rows: int, 
+    corr_target: str | None,
+    decimals: int,
+    sep_mark: str,
+    dec_mark: str,
+    compact: bool,
+    pattern: str | None,
+    locale: str | None
+) -> GT:
     """Build minimal Great Tables object."""
     # Determine column organization
     basic_cols = ["Dtype", "Count", "Mean", "Min", "Q25", "Median", "Q75", "Max"]
@@ -613,15 +652,23 @@ def _build_minimal_gt_table(summary_df: pl.DataFrame, n_rows: int, corr_target: 
     gt_table = (
         GT(summary_df)
         .tab_header(
-            title="📊 Data Summary",
+            title="🔬 Data X-ray",
             subtitle=f"Dataset: {n_rows:,} rows × {summary_df.height} columns"
         )
         .tab_spanner(label="Basic Statistics", columns=basic_cols)
         .tab_spanner(label="Key Metrics", columns=essential_cols)
         .tab_spanner(label="Quality", columns=quality_cols)
-        .fmt_integer(columns=["Count", "N_Outliers"])
-        .fmt_number(columns=[c for c in ["Mean", "Min", "Q25", "Median", "Q75", "Max", "IQR"] if c in summary_df.columns], decimals=2)
-        .fmt_number(columns=["Pct_Missing"], decimals=1)
+        .fmt_integer(columns=["Count", "N_Outliers"], sep_mark=sep_mark, locale=locale)
+        .fmt_number(
+            columns=[c for c in ["Mean", "Min", "Q25", "Median", "Q75", "Max", "IQR"] if c in summary_df.columns], 
+            decimals=decimals, 
+            sep_mark=sep_mark, 
+            dec_mark=dec_mark,
+            compact=compact,
+            pattern=pattern,
+            locale=locale
+        )
+        .fmt_number(columns=["Pct_Missing"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
         .cols_align(align="center", columns=basic_cols + essential_cols + quality_cols)
         .cols_align(align="left", columns=["Column"])
         .tab_options(
@@ -636,14 +683,25 @@ def _build_minimal_gt_table(summary_df: pl.DataFrame, n_rows: int, corr_target: 
         gt_table = (
             gt_table
             .tab_spanner(label=f"Correlation with '{corr_target}'", columns=["Correlation"])
-            .fmt_number(columns=["Correlation"], decimals=3)
+            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
             .cols_align(align="center", columns=["Correlation"])
         )
     
     return gt_table
 
 
-def _build_expanded_gt_table(summary_df: pl.DataFrame, n_rows: int, corr_target: str | None, percentiles: list[float]) -> GT:
+def _build_expanded_gt_table(
+    summary_df: pl.DataFrame, 
+    n_rows: int, 
+    corr_target: str | None, 
+    percentiles: list[float],
+    decimals: int,
+    sep_mark: str,
+    dec_mark: str,
+    compact: bool,
+    pattern: str | None,
+    locale: str | None
+) -> GT:
     """Build expanded Great Tables object with all statistics."""
     # Organize columns by category
     basic_cols = ["Dtype", "Count", "Mean", "Std", "Min", "Max"]
@@ -666,8 +724,8 @@ def _build_expanded_gt_table(summary_df: pl.DataFrame, n_rows: int, corr_target:
     gt_table = (
         GT(summary_df)
         .tab_header(
-            title="📊 Comprehensive Data Analysis",
-            subtitle=f"Dataset: {n_rows:,} rows × {summary_df.height} columns • Enhanced with Quality Assessment"
+            title="🔬 Comprehensive Data X-ray",
+            subtitle=f"Dataset: {n_rows:,} rows × {summary_df.height} columns • Deep Quality Analysis"
         )
         .tab_spanner(label="Basic Statistics", columns=basic_cols)
         .tab_spanner(label="Quantiles", columns=quantile_cols)
@@ -676,11 +734,19 @@ def _build_expanded_gt_table(summary_df: pl.DataFrame, n_rows: int, corr_target:
         .tab_spanner(label="Outliers", columns=outlier_cols)
         .tab_spanner(label="Statistical Tests", columns=test_cols)
         .tab_spanner(label="Quality Assessment", columns=quality_cols)
-        .fmt_integer(columns=["Count", "N_Missing", "N_Unique", "N_Zero", "N_Outliers", "Shakiness_Score"])
-        .fmt_number(columns=["Mean", "Std", "Min", "Max", "IQR", "MAD"] + quantile_cols, decimals=2)
-        .fmt_number(columns=["Skewness", "Kurtosis"], decimals=3)
-        .fmt_number(columns=["Pct_Missing", "Pct_Zero", "Pct_Pos", "Pct_Neg", "Pct_Outliers"], decimals=1)
-        .fmt_number(columns=["Uniqueness_Ratio"], decimals=4)
+        .fmt_integer(columns=["Count", "N_Missing", "N_Unique", "N_Zero", "N_Outliers", "Shakiness_Score"], sep_mark=sep_mark, locale=locale)
+        .fmt_number(
+            columns=["Mean", "Std", "Min", "Max", "IQR", "MAD"] + quantile_cols, 
+            decimals=decimals, 
+            sep_mark=sep_mark, 
+            dec_mark=dec_mark,
+            compact=compact,
+            pattern=pattern,
+            locale=locale
+        )
+        .fmt_number(columns=["Skewness", "Kurtosis"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
+        .fmt_number(columns=["Pct_Missing", "Pct_Zero", "Pct_Pos", "Pct_Neg", "Pct_Outliers"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
+        .fmt_number(columns=["Uniqueness_Ratio"], decimals=4, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
         .cols_align(align="center", columns=basic_cols + quantile_cols + distribution_cols + count_cols + outlier_cols + ["Shakiness_Score"])
         .cols_align(align="left", columns=["Column", "Opt_Dtype", "Quality_Flag"] + test_cols)
         .tab_options(
@@ -695,7 +761,7 @@ def _build_expanded_gt_table(summary_df: pl.DataFrame, n_rows: int, corr_target:
         gt_table = (
             gt_table
             .tab_spanner(label=f"Correlation with '{corr_target}'", columns=["Correlation"])
-            .fmt_number(columns=["Correlation"], decimals=3)
+            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
             .cols_align(align="center", columns=["Correlation"])
         )
     
