@@ -1,10 +1,11 @@
 from .clean import clean_column_names
-from .plots import corr_heatmap, dist_plot, distplot, missingval_plot
+from .plots import corr_heatmap, dist_plot, distplot, missingval_plot, cat_plot
 from .utils import save_fig
 from .profiler import profile_quick, save_profile
 from .profiling import profile_report, profile_config, ProfileReport, ProfileConfig
 
 __all__ = [
+    "cat_plot",        # New klib function
     "clean_column_names",
     "corr_heatmap",
     "dist_plot",       # New klib-compatible name
