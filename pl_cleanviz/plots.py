@@ -191,6 +191,57 @@ def _corr_plot_seaborn(columns: list[str], corr_matrix, method: str, clustered: 
     plt.tight_layout()
     return fig
 
+def _corr_heatmap_seaborn_enhanced(row_labels: list, col_labels: list, mat: List[List[float]], annotate: bool, method: str, target: str, width, height):
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    # Handle None values for filtered correlations
+    display_mat = []
+    for row in mat:
+        display_row = []
+        for val in row:
+            if val is None:
+                display_row.append(np.nan)  # Use NaN for missing values
+            else:
+                display_row.append(val)
+        display_mat.append(display_row)
+    
+    # Convert to numpy array
+    corr_array = np.array(display_mat)
+    
+    # Create figure
+    fig_w, fig_h = _px_to_inches(width, height, 10.0)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    
+    # Create enhanced seaborn heatmap
+    sns.heatmap(
+        corr_array,
+        xticklabels=col_labels,
+        yticklabels=row_labels,
+        annot=annotate,
+        cmap='RdBu_r',
+        center=0,
+        vmin=-1,
+        vmax=1,
+        square=True,
+        ax=ax,
+        cbar_kws={'label': f'{method.title()} Correlation'},
+        fmt='.3f',
+        mask=np.isnan(corr_array)  # Mask NaN values
+    )
+    
+    # Set title
+    if target:
+        title = f"{method.title()} Correlation with '{target}'"
+    else:
+        title = f"{method.title()} Correlation Matrix"
+    
+    ax.set_title(title, fontsize=14, pad=20)
+    
+    plt.tight_layout()
+    return fig
+
 # ---------- Plotly backends ----------
 
 def _corr_heatmap_plotly(cols: Sequence[str], mat: List[List[float]], annotate: bool, width, height):
@@ -269,6 +320,58 @@ def _cat_plot_plotly(cat_data: dict, width, height):
     
     return fig
 
+def _corr_heatmap_plotly_enhanced(row_labels: list, col_labels: list, mat: List[List[float]], annotate: bool, method: str, target: str, width, height):
+    import plotly.graph_objects as go
+    
+    # Handle None values for filtered correlations
+    display_mat = []
+    text_mat = []
+    for row in mat:
+        display_row = []
+        text_row = []
+        for val in row:
+            if val is None:
+                display_row.append(0)  # Show as neutral color
+                text_row.append("")    # No text
+            else:
+                display_row.append(val)
+                text_row.append(f"{val:.3f}" if annotate else "")
+        display_mat.append(display_row)
+        text_mat.append(text_row)
+    
+    # Create enhanced heatmap
+    fig = go.Figure(data=go.Heatmap(
+        z=display_mat,
+        x=col_labels,
+        y=row_labels,
+        colorscale='RdBu',
+        zmid=0,
+        zmin=-1,
+        zmax=1,
+        colorbar=dict(title=f"{method.title()}<br>Correlation"),
+        text=text_mat,
+        texttemplate="%{text}",
+        textfont={"size": 10},
+        hovertemplate='<b>%{y}</b> vs <b>%{x}</b><br>' +
+                     f'{method.title()} Correlation: %{{z:.3f}}<extra></extra>'
+    ))
+    
+    # Set appropriate title
+    if target:
+        title = f"{method.title()} Correlation with '{target}'"
+    else:
+        title = f"{method.title()} Correlation Matrix"
+    
+    fig.update_layout(
+        title=title,
+        width=width or 700,
+        height=height or 600,
+        xaxis=dict(side="bottom"),
+        yaxis=dict(autorange="reversed")
+    )
+    
+    return fig
+
 def _corr_plot_plotly(columns: list[str], corr_matrix: list, method: str, interactive: bool, clustered: bool, width, height):
     import plotly.graph_objects as go
     
@@ -321,6 +424,65 @@ def _corr_heatmap_altair(cols: Sequence[str], mat: List[List[float]], annotate: 
         if width:  text = text.properties(width=width)
         if height: text = text.properties(height=height)
         return base + text
+    return base
+
+def _corr_heatmap_altair_enhanced(row_labels: list, col_labels: list, mat: List[List[float]], annotate: bool, method: str, target: str, width, height):
+    import altair as alt
+    
+    # Prepare data for altair - handle None values
+    data = []
+    for i, row_name in enumerate(row_labels):
+        for j, col_name in enumerate(col_labels):
+            val = mat[i][j]
+            if val is not None:
+                data.append({
+                    "row": row_name,
+                    "col": col_name,
+                    "correlation": val
+                })
+    
+    if not data:
+        # Return empty chart with message
+        return alt.Chart(pl.DataFrame({'message': ['No correlations to display']})).mark_text(
+            text='No correlations to display'
+        ).properties(width=width or 400, height=height or 300)
+    
+    df_data = pl.DataFrame(data)
+    
+    # Create base heatmap
+    base = alt.Chart(df_data).mark_rect().encode(
+        x=alt.X('col:N', title='Variables'),
+        y=alt.Y('row:N', title='Variables'),
+        color=alt.Color('correlation:Q', 
+                       scale=alt.Scale(scheme='redblue', domain=[-1, 1]),
+                       legend=alt.Legend(title=f'{method.title()} Correlation')),
+        tooltip=['row', 'col', 'correlation']
+    )
+    
+    # Set title
+    if target:
+        title = f"{method.title()} Correlation with '{target}'"
+    else:
+        title = f"{method.title()} Correlation Matrix"
+    
+    base = base.properties(title=title)
+    if width: base = base.properties(width=width)
+    if height: base = base.properties(height=height)
+    
+    # Add text annotations if requested
+    if annotate:
+        text = alt.Chart(df_data).mark_text(
+            color='white',
+            fontSize=10
+        ).encode(
+            x='col:N', 
+            y='row:N', 
+            text=alt.Text('correlation:Q', format='.3f')
+        )
+        if width: text = text.properties(width=width)
+        if height: text = text.properties(height=height)
+        return base + text
+    
     return base
 
 def _distplot_altair(s: pl.Series, column: str, bins: int, width, height):
@@ -444,70 +606,247 @@ def corr_heatmap(
     df: pl.DataFrame,
     columns: Sequence[str] | None = None,
     *,
+    split: str | None = None,
+    threshold: float = 0.0,
+    target: str | None = None,
+    method: str = "pearson",
     annotate: bool = True,
     width: int | None = None,
     height: int | None = None,
     backend: str = "plotly",
 ):
     """
-    Create a correlation heatmap for numeric columns in a DataFrame.
+    Generate a color-encoded correlation heatmap to visualize relationships between numeric columns.
+    
+    This function creates a comprehensive correlation heatmap with advanced filtering and 
+    targeting options, similar to klib's corr_mat function but optimized for Polars DataFrames.
 
     Parameters
     ----------
     df : pl.DataFrame
-        The input DataFrame containing numeric columns to correlate.
+        Input DataFrame containing numeric columns to analyze. Non-numeric columns are automatically excluded.
     columns : Sequence[str] | None, optional
-        Specific columns to include in correlation. If None, uses all numeric columns.
+        Specific columns to include in correlation analysis. If None, uses all numeric columns.
+    split : str | None, optional
+        Type of correlation filtering to apply. Options:
+        - None: Show all correlations between feature columns
+        - "pos": Show only positive correlations above threshold
+        - "neg": Show only negative correlations below -threshold  
+        - "high": Show correlations where abs(correlation) > threshold
+        - "low": Show correlations where abs(correlation) < threshold
+    threshold : float, default 0.0
+        Correlation threshold value between 0 and 1. Used with split parameter:
+        - For "pos"/"neg": minimum absolute correlation to display
+        - For "high"/"low": threshold for filtering correlations
+        - Default becomes 0.3 when split is "high" or "low"
+    target : str | None, optional
+        Target column for correlation analysis. When specified, shows correlations 
+        between each feature column and the target column only (similar to target correlation analysis).
+    method : str, default "pearson"
+        Correlation calculation method:
+        - "pearson": Linear correlation (assumes normal distribution)
+        - "spearman": Rank-based correlation (monotonic relationships)
+        Note: "kendall" is not supported in current Polars version
     annotate : bool, default True
-        Whether to display correlation values as text on each cell.
+        Whether to display correlation values as text annotations on each cell.
     width : int | None, optional
-        Width of the plot in pixels. If None, uses backend default.
+        Plot width in pixels. If None, uses backend default (typically 700-800px).
     height : int | None, optional
-        Height of the plot in pixels. If None, uses backend default.
-    backend : str, default "matplotlib"
-        Plotting backend to use. Options: "seaborn", "plotly", "altair".
+        Plot height in pixels. If None, uses backend default (typically 600px).
+    backend : str, default "plotly"
+        Visualization backend:
+        - "plotly": Interactive heatmap with hover details (default)
+        - "seaborn": Static heatmap with publication-quality styling
+        - "altair": Grammar of graphics heatmap
 
     Returns
     -------
     Figure object
-        The correlation heatmap figure (type depends on backend).
+        Correlation heatmap visualization. Type depends on backend:
+        - plotly: plotly.graph_objects.Figure
+        - seaborn: matplotlib.figure.Figure  
+        - altair: altair.Chart
+
+    Raises
+    ------
+    ValueError
+        - If method is not "pearson" or "spearman"
+        - If split parameter has invalid value
+        - If target column doesn't exist or isn't numeric
+        - If threshold is not between 0 and 1
+        - If less than 2 numeric columns available
 
     Examples
     --------
+    Basic correlation heatmap:
+    
     >>> import polars as pl
     >>> import pl_cleanviz as plc
-    >>> df = pl.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]})
-    >>> plc.corr_heatmap(df, backend="plotly", annotate=False)
+    >>> df = pl.DataFrame({
+    ...     'price': [100, 200, 150, 300], 
+    ...     'volume': [10, 20, 15, 30],
+    ...     'rating': [4.5, 3.8, 4.2, 4.9]
+    ... })
+    >>> plc.corr_heatmap(df)
+    
+    Show only strong correlations:
+    
+    >>> plc.corr_heatmap(df, split="high", threshold=0.7)
+    
+    Target correlation analysis:
+    
+    >>> plc.corr_heatmap(df, target="price", method="spearman")
+    
+    Publication-ready static plot:
+    
+    >>> plc.corr_heatmap(df, backend="seaborn", annotate=True, 
+    ...                  width=800, height=600)
+
+    See Also
+    --------
+    corr_plot : Enhanced correlation plots with clustering and interactivity
+    quick_profile : Comprehensive data profiling with correlation analysis
+    
+    Notes
+    -----
+    - Missing values (NaN/None) are automatically excluded from correlation calculations
+    - For datasets with many columns, consider using split="high" with appropriate threshold
+    - Spearman correlation is recommended for non-normally distributed data
+    - Interactive plotly backend allows zooming and detailed hover information
     """
-    cols = _ensure_columns(df, columns)
-    if len(cols) == 0:
+    # Validate parameters
+    if method not in ["pearson", "spearman"]:
+        raise ValueError("method must be 'pearson' or 'spearman'")
+    
+    if split and split not in ["pos", "neg", "high", "low"]:
+        raise ValueError("split must be None, 'pos', 'neg', 'high', or 'low'")
+    
+    if not 0 <= threshold <= 1:
+        raise ValueError("threshold must be between 0 and 1")
+    
+    # Set default threshold for high/low splits
+    if split in ["high", "low"] and threshold == 0.0:
+        threshold = 0.3
+    
+    # Get numeric columns
+    if target:
+        # Target correlation mode - ensure target exists and is numeric
+        if target not in df.columns:
+            raise ValueError(f"Target column '{target}' not found in DataFrame")
+        
+        target_dtype = df.select(pl.col(target)).dtypes[0]
+        if not target_dtype.is_numeric():
+            raise ValueError(f"Target column '{target}' must be numeric, got {target_dtype}")
+        
+        # Get all other numeric columns for correlation with target
+        all_numeric = [c for c, dt in zip(df.columns, df.dtypes) if dt.is_numeric()]
+        cols = [c for c in all_numeric if c != target]
+        
+        if columns:
+            # Filter to specified columns (excluding target)
+            cols = [c for c in cols if c in columns]
+        
+        if len(cols) == 0:
+            raise ValueError("No numeric columns available for target correlation")
+        
+        # Calculate target correlations
+        correlations = []
+        for col in cols:
+            if method == "pearson":
+                corr_val = df.select([pl.corr(target, col)]).item()
+            else:  # spearman
+                # Rank-based correlation
+                ranked_df = df.select([
+                    pl.col(target).rank().alias('target_rank'),
+                    pl.col(col).rank().alias('col_rank')
+                ])
+                corr_val = ranked_df.select([pl.corr('target_rank', 'col_rank')]).item()
+            
+            correlations.append(corr_val if corr_val is not None else 0.0)
+        
+        # Create target correlation matrix (1 row)
+        mat = [correlations]
+        correlation_cols = cols
+        correlation_rows = [target]
+        
+    else:
+        # Standard correlation matrix mode
+        cols = _ensure_columns(df, columns)
+        if len(cols) < 2:
+            raise ValueError("Need at least 2 numeric columns for correlation matrix")
+        
+        # Calculate correlation matrix
+        df_numeric = df.select(cols)
+        
+        if method == "pearson":
+            corr_df = df_numeric.corr()
+        else:  # spearman
+            # Rank all columns then correlate
+            ranked_df = df_numeric.select([
+                pl.col(c).rank().alias(c) for c in cols
+            ])
+            corr_df = ranked_df.corr()
+        
+        mat = corr_df.to_numpy().tolist()
+        correlation_cols = cols
+        correlation_rows = cols
+    
+    # Apply split filtering if specified
+    if split:
+        filtered_mat = []
+        for i, row in enumerate(mat):
+            filtered_row = []
+            for j, val in enumerate(row):
+                if split == "pos" and val > threshold:
+                    filtered_row.append(val)
+                elif split == "neg" and val < -threshold:
+                    filtered_row.append(val)
+                elif split == "high" and abs(val) > threshold:
+                    filtered_row.append(val)
+                elif split == "low" and abs(val) < threshold:
+                    filtered_row.append(val)
+                else:
+                    # Set to NaN/None for filtered values (will appear as empty in plot)
+                    filtered_row.append(None)
+            filtered_mat.append(filtered_row)
+        mat = filtered_mat
+    
+    # Check if we have any data to plot after filtering
+    if split and all(all(val is None for val in row) for row in mat):
+        # Return empty plot with message
         if backend == "seaborn":
             import matplotlib.pyplot as plt
-            fig, ax = plt.subplots()
-            ax.set_axis_off()
-            fig.suptitle("No numeric columns to correlate")
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.text(0.5, 0.5, f'No correlations found with split="{split}" and threshold={threshold}',
+                   ha='center', va='center', transform=ax.transAxes, fontsize=12)
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            ax.axis('off')
             return fig
         elif backend == "plotly":
             import plotly.graph_objects as go
-            fig = go.Figure(); fig.update_layout(title="No numeric columns to correlate",
-                                                 width=width, height=height); return fig
+            fig = go.Figure()
+            fig.update_layout(
+                title=f'No correlations found with split="{split}" and threshold={threshold}',
+                width=width, height=height
+            )
+            return fig
         elif backend == "altair":
             import altair as alt
-            chart = alt.Chart(pl.DataFrame({"values": []})).mark_rect()
-            if width:  chart = chart.properties(width=width)
+            chart = alt.Chart(pl.DataFrame({"message": ["No correlations found"]})).mark_text(
+                text=f'No correlations found with split="{split}" and threshold={threshold}'
+            )
+            if width: chart = chart.properties(width=width)
             if height: chart = chart.properties(height=height)
             return chart
-        else:
-            raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
-
-    mat = _corr_matrix(df, cols)
-
+    
+    # Generate plot with appropriate backend
     if backend == "seaborn":
-        return _corr_heatmap_seaborn(cols, mat, annotate, width, height)
+        return _corr_heatmap_seaborn_enhanced(correlation_rows, correlation_cols, mat, annotate, method, target, width, height)
     elif backend == "plotly":
-        return _corr_heatmap_plotly(cols, mat, annotate, width, height)
+        return _corr_heatmap_plotly_enhanced(correlation_rows, correlation_cols, mat, annotate, method, target, width, height)
     elif backend == "altair":
-        return _corr_heatmap_altair(cols, mat, annotate, width, height)
+        return _corr_heatmap_altair_enhanced(correlation_rows, correlation_cols, mat, annotate, method, target, width, height)
     else:
         raise ValueError("backend must be 'seaborn', 'plotly', or 'altair'")
 
