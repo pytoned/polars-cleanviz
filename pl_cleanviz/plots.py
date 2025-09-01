@@ -41,59 +41,87 @@ def _px_to_inches(w: Optional[int], h: Optional[int], default_size: float) -> Tu
         return size, size
     return max(w/100, 1.0), max(h/100, 1.0)
 
-# ---------- Matplotlib backends ----------
+# ---------- Seaborn backends ----------
 
-def _corr_heatmap_matplotlib(cols: Sequence[str], mat: List[List[float]], annotate: bool, width, height):
+def _corr_heatmap_seaborn(cols: Sequence[str], mat: List[List[float]], annotate: bool, width, height):
+    import seaborn as sns
     import matplotlib.pyplot as plt
+    import numpy as np
+    
+    # Convert correlation matrix to numpy array for seaborn (no pandas needed!)
+    corr_array = np.array(mat)
+    
     n = len(cols)
     fig_w, fig_h = _px_to_inches(width, height, 0.6 * n)
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
-    im = ax.imshow(mat, vmin=-1.0, vmax=1.0)
-    ax.set_xticks(range(n))
-    ax.set_yticks(range(n))
-    ax.set_xticklabels(cols, rotation=90)
-    ax.set_yticklabels(cols)
-    ax.set_title("Correlation heatmap (Pearson)")
-    cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-    cb.ax.set_ylabel("r", rotation=0, labelpad=10)
-    if annotate:
-        for i in range(n):
-            for j in range(n):
-                ax.text(j, i, f"{mat[i][j]:.2f}", ha="center", va="center")
-    fig.tight_layout()
-    plt.close(fig)  # Prevent automatic display
-    return fig
-
-def _distplot_matplotlib(s: pl.Series, column: str, bins: int, width, height):
-    import matplotlib.pyplot as plt
-    fig_w, fig_h = _px_to_inches(width, height, 6.0)
-    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
-    ax.hist(s.to_numpy(), bins=bins, alpha=0.7, edgecolor='black', linewidth=0.5)
-    ax.set_title(f"Distribution: {column}")
-    ax.set_xlabel(column)
-    ax.set_ylabel("Count")
-    ax.grid(True, alpha=0.3)
+    
+    # Use seaborn heatmap with better styling (klib-like)
+    sns.heatmap(
+        corr_array,
+        xticklabels=cols,
+        yticklabels=cols,
+        annot=annotate, 
+        cmap='RdBu_r', 
+        center=0, 
+        vmin=-1, 
+        vmax=1,
+        square=True,
+        ax=ax,
+        fmt='.2f',
+        cbar_kws={'label': 'Correlation coefficient'}
+    )
+    
+    ax.set_title("Correlation Heatmap (Pearson)", fontsize=14, pad=20)
+    plt.xticks(rotation=45, ha='right')
+    plt.yticks(rotation=0)
     fig.tight_layout()
     
-    # Don't close the figure - let it display in Jupyter
     return fig
 
-def _missingval_plot_matplotlib(cols: List[str], ratios: List[float], counts: List[int], width, height, normalize: bool = False):
+def _dist_plot_seaborn(s: pl.Series, column: str, bins: int, width, height):
+    import seaborn as sns
     import matplotlib.pyplot as plt
+    
+    # Use numpy array directly (no pandas needed!)
+    data = s.to_numpy()
+    
+    fig_w, fig_h = _px_to_inches(width, height, 8.0)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    
+    # Use seaborn histplot with KDE overlay (like klib)
+    sns.histplot(data, bins=bins, kde=True, stat='count', alpha=0.7, ax=ax)
+    
+    ax.set_title(f"Distribution of {column}", fontsize=14, pad=20)
+    ax.set_xlabel(column, fontsize=12)
+    ax.set_ylabel("Count", fontsize=12)
+    ax.grid(True, alpha=0.3)
+    
+    fig.tight_layout()
+    return fig
+
+def _missingval_plot_seaborn(cols: List[str], ratios: List[float], counts: List[int], width, height, normalize: bool = False):
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    
     fig_w, fig_h = _px_to_inches(width, height, max(3.0, len(cols) * 0.25))
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
-    ax.barh(cols, ratios)
+    
+    # Use seaborn barplot for better styling
+    sns.barplot(x=ratios, y=cols, ax=ax, palette='viridis')
+    
+    # Add text annotations
     for y, v, a in zip(range(len(cols)), ratios, counts):
         if normalize:
-            ax.text(v, y, f" {v*100:.1f}%", va="center")
+            ax.text(v, y, f" {v*100:.1f}%", va="center", fontsize=10)
         else:
-            ax.text(v, y, f" {a}", va="center")
-    ax.set_xlabel("Share of missing")
-    ax.set_ylabel("Columns")
-    ax.set_title("Missing values per column")
-    ax.invert_yaxis()
+            ax.text(v, y, f" {a}", va="center", fontsize=10)
+    
+    ax.set_xlabel("Share of missing values", fontsize=12)
+    ax.set_ylabel("Columns", fontsize=12)
+    ax.set_title("Missing Values per Column", fontsize=14, pad=20)
+    ax.grid(True, alpha=0.3, axis='x')
+    
     fig.tight_layout()
-    plt.close(fig)  # Prevent automatic display
     return fig
 
 # ---------- Plotly backends ----------
@@ -192,7 +220,7 @@ def corr_heatmap(
     annotate: bool = True,
     width: int | None = None,
     height: int | None = None,
-    backend: str = "matplotlib",
+    backend: str = "plotly",
 ):
     """
     Create a correlation heatmap for numeric columns in a DataFrame.
@@ -210,7 +238,7 @@ def corr_heatmap(
     height : int | None, optional
         Height of the plot in pixels. If None, uses backend default.
     backend : str, default "matplotlib"
-        Plotting backend to use. Options: "matplotlib", "plotly", "altair".
+        Plotting backend to use. Options: "seaborn", "plotly", "altair".
 
     Returns
     -------
@@ -226,7 +254,7 @@ def corr_heatmap(
     """
     cols = _ensure_columns(df, columns)
     if len(cols) == 0:
-        if backend == "matplotlib":
+        if backend == "seaborn":
             import matplotlib.pyplot as plt
             fig, ax = plt.subplots()
             ax.set_axis_off()
@@ -247,14 +275,14 @@ def corr_heatmap(
 
     mat = _corr_matrix(df, cols)
 
-    if backend == "matplotlib":
-        return _corr_heatmap_matplotlib(cols, mat, annotate, width, height)
+    if backend == "seaborn":
+        return _corr_heatmap_seaborn(cols, mat, annotate, width, height)
     elif backend == "plotly":
         return _corr_heatmap_plotly(cols, mat, annotate, width, height)
     elif backend == "altair":
         return _corr_heatmap_altair(cols, mat, annotate, width, height)
     else:
-        raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
+        raise ValueError("backend must be 'seaborn', 'plotly', or 'altair'")
 
 def dist_plot(
     df: pl.DataFrame,
@@ -263,7 +291,7 @@ def dist_plot(
     bins: int = 30,
     width: int | None = None,
     height: int | None = None,
-    backend: str = "matplotlib",
+    backend: str = "plotly",
 ):
     """
     Create a distribution plot (histogram) for a numeric column.
@@ -281,7 +309,7 @@ def dist_plot(
     height : int | None, optional
         Height of the plot in pixels. If None, uses backend default.
     backend : str, default "matplotlib"
-        Plotting backend to use. Options: "matplotlib", "plotly", "altair".
+        Plotting backend to use. Options: "seaborn", "plotly", "altair".
 
     Returns
     -------
@@ -298,7 +326,7 @@ def dist_plot(
     cols = _numeric_columns(df)
     if column is None:
         if not cols:
-            if backend == "matplotlib":
+            if backend == "seaborn":
                 import matplotlib.pyplot as plt
                 fig, ax = plt.subplots()
                 ax.set_axis_off()
@@ -318,7 +346,7 @@ def dist_plot(
                 raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
         column = cols[0]
     elif column not in df.columns:
-        if backend == "matplotlib":
+        if backend == "seaborn":
             import matplotlib.pyplot as plt
             fig, ax = plt.subplots()
             ax.set_axis_off()
@@ -338,7 +366,7 @@ def dist_plot(
             raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
     else:
         if not df[column].dtype.is_numeric():
-            if backend == "matplotlib":
+            if backend == "seaborn":
                 import matplotlib.pyplot as plt
                 fig, ax = plt.subplots()
                 ax.set_axis_off()
@@ -361,14 +389,14 @@ def dist_plot(
     if s.dtype not in (pl.Float32, pl.Float64):
         s = s.cast(pl.Float64)
 
-    if backend == "matplotlib":
-        return _distplot_matplotlib(s, column, bins, width, height)
+    if backend == "seaborn":
+        return _dist_plot_seaborn(s, column, bins, width, height)
     elif backend == "plotly":
         return _distplot_plotly(s, column, bins, width, height)
     elif backend == "altair":
         return _distplot_altair(s, column, bins, width, height)
     else:
-        raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
+        raise ValueError("backend must be 'seaborn', 'plotly', or 'altair'")
 
 
 # Backward compatibility alias
@@ -381,7 +409,7 @@ def missingval_plot(
     normalize: bool = False,
     width: int | None = None,
     height: int | None = None,
-    backend: str = "matplotlib",
+    backend: str = "plotly",
 ):
     """
     Create a horizontal bar plot showing missing values per column.
@@ -400,7 +428,7 @@ def missingval_plot(
     height : int | None, optional
         Height of the plot in pixels. If None, uses backend default.
     backend : str, default "matplotlib"
-        Plotting backend to use. Options: "matplotlib", "plotly", "altair".
+        Plotting backend to use. Options: "seaborn", "plotly", "altair".
 
     Returns
     -------
@@ -416,7 +444,7 @@ def missingval_plot(
     """
     cols = list(df.columns)
     if not cols:
-        if backend == "matplotlib":
+        if backend == "seaborn":
             import matplotlib.pyplot as plt
             fig, ax = plt.subplots()
             ax.set_axis_off()
@@ -447,11 +475,11 @@ def missingval_plot(
     ratios_o = [ratios[i] for i in order]
     counts_o = [counts[i] for i in order]
 
-    if backend == "matplotlib":
-        return _missingval_plot_matplotlib(cols_o, ratios_o, counts_o, width, height, normalize)
+    if backend == "seaborn":
+        return _missingval_plot_seaborn(cols_o, ratios_o, counts_o, width, height, normalize)
     elif backend == "plotly":
         return _missingval_plot_plotly(cols_o, ratios_o, counts_o, width, height, normalize)
     elif backend == "altair":
         return _missingval_plot_altair(cols_o, ratios_o, counts_o, width, height, normalize)
     else:
-        raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
+        raise ValueError("backend must be 'seaborn', 'plotly', or 'altair'")
