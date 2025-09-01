@@ -11,7 +11,10 @@ def _numeric_columns(df: pl.DataFrame) -> list[str]:
         from polars import selectors as cs  # type: ignore
         return list(df.select(cs.numeric()).columns)
     except Exception:
-        return [c for c, dt in zip(df.columns, df.dtypes) if pl.datatypes.is_numeric(dt)]
+        # For newer Polars versions, check against numeric types directly
+        numeric_types = (pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64, 
+                        pl.Float32, pl.Float64, pl.Decimal)
+        return [c for c, dt in zip(df.columns, df.dtypes) if isinstance(dt, numeric_types)]
 
 def _ensure_columns(df: pl.DataFrame, columns: Iterable[str] | None) -> list[str]:
     if columns is None:
@@ -19,7 +22,10 @@ def _ensure_columns(df: pl.DataFrame, columns: Iterable[str] | None) -> list[str
     else:
         cols = [c for c in columns if c in df.columns]
         dtypes = dict(zip(df.columns, df.dtypes))
-        cols = [c for c in cols if pl.datatypes.is_numeric(dtypes[c])]
+        # For newer Polars versions, check against numeric types directly
+        numeric_types = (pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64, 
+                        pl.Float32, pl.Float64, pl.Decimal)
+        cols = [c for c in cols if isinstance(dtypes[c], numeric_types)]
     return cols
 
 def _corr_pair(df: pl.DataFrame, c1: str, c2: str) -> float:
@@ -264,7 +270,10 @@ def distplot(
         else:
             raise ValueError("backend must be 'matplotlib', 'plotly', or 'altair'")
     else:
-        if not pl.datatypes.is_numeric(df[column].dtype):
+        # For newer Polars versions, check against numeric types directly
+        numeric_types = (pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64, 
+                        pl.Float32, pl.Float64, pl.Decimal)
+        if not isinstance(df[column].dtype, numeric_types):
             if backend == "matplotlib":
                 import matplotlib.pyplot as plt
                 fig, ax = plt.subplots()

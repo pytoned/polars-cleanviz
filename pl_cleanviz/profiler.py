@@ -26,7 +26,10 @@ def profile_quick(
     missing_list = [{"column": c, "missing": n, "ratio": r} for c, n, r in zip(cols, counts, ratios)]
 
     # choose a numeric column for the distplot (first numeric)
-    num_cols = [c for c, dt in zip(df.columns, df.dtypes) if pl.datatypes.is_numeric(dt)]
+    # For newer Polars versions, check against numeric types directly
+    numeric_types = (pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64, 
+                    pl.Float32, pl.Float64, pl.Decimal)
+    num_cols = [c for c, dt in zip(df.columns, df.dtypes) if isinstance(dt, numeric_types)]
     dist_col = num_cols[0] if num_cols else None
 
     plots = {

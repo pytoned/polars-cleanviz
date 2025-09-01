@@ -91,16 +91,19 @@ class ProfileReport:
 
             # classify
             kind = "other"
-            if pl.datatypes.is_numeric(dt):
+            # For newer Polars versions, check against numeric types directly
+            numeric_types = (pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64, 
+                            pl.Float32, pl.Float64, pl.Decimal)
+            if isinstance(dt, numeric_types):
                 kind = "numeric"; num_cols.append(c)
             elif dt == pl.Boolean:
                 kind = "boolean"; bool_cols.append(c)
-            elif pl.datatypes.is_utf8(dt):
+            elif dt in (pl.String, pl.Utf8):
                 # heuristic: small-cardinality strings -> categorical
                 kind = "categorical" if distinct <= cfg.infer_categorical_threshold else "text"
                 if kind == "categorical":
                     cat_cols.append(c)
-            elif pl.datatypes.is_datetime(dt) or pl.datatypes.is_date(dt) or pl.datatypes.is_time(dt):
+            elif dt in (pl.Datetime, pl.Date, pl.Time):
                 kind = "datetime"; dt_cols.append(c)
 
             vstats: Dict[str, Any] = {
@@ -145,7 +148,7 @@ class ProfileReport:
                         vstats["mode"] = {"value": top[0][c], "count": int(top[0]["len"]) }
                 except Exception:
                     pass
-                if pl.datatypes.is_utf8(dt):
+                if dt in (pl.String, pl.Utf8):
                     # string lengths
                     try:
                         lens = df.select(pl.col(c).str.len_chars()).drop_nulls()
