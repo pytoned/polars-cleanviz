@@ -10,7 +10,7 @@ from .utils import fig_to_base64_png
 
 
 @dataclass
-class ProfileConfig:
+class profile_config:
     title: str = "Polars Profile Report"
     backend: str = "matplotlib"  # use matplotlib for embedded PNGs
     bins: int = 30
@@ -20,7 +20,7 @@ class ProfileConfig:
     infer_categorical_threshold: int = 50  # treat small-cardinality strings as categorical
 
 
-class ProfileReport:
+class profile_report:
     """
     Polars-only profiling report inspired by ydata-profiling, simplified.
 
@@ -28,7 +28,7 @@ class ProfileReport:
     embeds plots as base64 PNG in a single self-contained HTML.
     """
 
-    def __init__(self, df: pl.DataFrame, *, config: Optional[ProfileConfig] = None):
+    def __init__(self, df: pl.DataFrame, *, config: Optional[profile_config] = None):
         self.df = df
         self.config = config or ProfileConfig()
         self._model: Dict[str, Any] = {}
@@ -350,4 +350,9 @@ def _simple_table(rows: List[dict]) -> str:
     thead = "".join(f"<th>{_esc(c)}</th>" for c in cols)
     tb = "".join("<tr>" + "".join(f"<td>{_esc(r.get(c,''))}</td>" for c in cols) + "</tr>" for r in rows)
     return f"<div style='overflow:auto'><table><thead><tr>{thead}</tr></thead><tbody>{tb}</tbody></table></div>"
+
+
+# Backward compatibility aliases (deprecated, use lowercase versions)
+ProfileConfig = profile_config
+ProfileReport = profile_report
 
