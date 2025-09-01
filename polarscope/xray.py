@@ -786,9 +786,18 @@ def _build_minimal_gt_table(
             title="🔬 DataFrame X-ray",
             subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
         )
-        .tab_spanner(label="Basic Statistics", columns=basic_cols)
-        .tab_spanner(label="Key Metrics", columns=essential_cols)
-        .tab_spanner(label="Quality", columns=quality_cols)
+    )
+    
+    # Add spanners only for non-empty column groups
+    if basic_cols:
+        gt_table = gt_table.tab_spanner(label="Basic Statistics", columns=basic_cols)
+    if essential_cols:
+        gt_table = gt_table.tab_spanner(label="Key Metrics", columns=essential_cols)
+    if quality_cols:
+        gt_table = gt_table.tab_spanner(label="Quality", columns=quality_cols)
+    
+    gt_table = (
+        gt_table
         .fmt_integer(columns=["Count", "null_count", "N_Outliers"], sep_mark=sep_mark)
         .fmt_number(
             columns=[c for c in ["Mean", "std", "Min", "25%", "50%", "75%", "Max", "IQR", "skew"] if c in summary_df.columns], 
@@ -859,13 +868,26 @@ def _build_expanded_gt_table(
             title="🔬 Expanded Statistics",
             subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
         )
-        .tab_spanner(label="Basic Statistics", columns=basic_cols)
-        .tab_spanner(label="Quantiles", columns=quantile_cols)
-        .tab_spanner(label="Distribution", columns=distribution_cols)
-        .tab_spanner(label="Counts & Ratios", columns=count_cols)
-        .tab_spanner(label="Outliers", columns=outlier_cols)
-        .tab_spanner(label="Statistical Tests", columns=test_cols)
-        .tab_spanner(label="Quality Assessment", columns=quality_cols)
+    )
+    
+    # Add spanners only for non-empty column groups
+    if basic_cols:
+        gt_table = gt_table.tab_spanner(label="Basic Statistics", columns=basic_cols)
+    if quantile_cols:
+        gt_table = gt_table.tab_spanner(label="Quantiles", columns=quantile_cols)
+    if distribution_cols:
+        gt_table = gt_table.tab_spanner(label="Distribution", columns=distribution_cols)
+    if count_cols:
+        gt_table = gt_table.tab_spanner(label="Counts & Ratios", columns=count_cols)
+    if outlier_cols:
+        gt_table = gt_table.tab_spanner(label="Outliers", columns=outlier_cols)
+    if test_cols:
+        gt_table = gt_table.tab_spanner(label="Statistical Tests", columns=test_cols)
+    if quality_cols:
+        gt_table = gt_table.tab_spanner(label="Quality Assessment", columns=quality_cols)
+    
+    gt_table = (
+        gt_table
         .fmt_integer(columns=["Count", "null_count", "N_Unique", "N_Zero", "N_Outliers", "Shakiness_Score"], sep_mark=sep_mark)
         .fmt_number(
             columns=["Mean", "std", "Min", "Max", "IQR", "MAD"] + quantile_cols, 
