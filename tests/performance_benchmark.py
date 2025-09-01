@@ -54,8 +54,10 @@ class PerformanceBenchmark:
                 col_data = np.random.choice(categories, n_rows)
                 if missing_rate > 0:
                     missing_indices = np.random.choice(n_rows, int(n_rows * missing_rate), replace=False)
-                    col_data = col_data.astype(object)
-                    col_data[missing_indices] = None
+                    # Convert to list to handle None values properly
+                    col_data = col_data.tolist()
+                    for idx in missing_indices:
+                        col_data[idx] = None
                 data[f'categorical_{i}'] = col_data
         
         return pl.DataFrame(data)

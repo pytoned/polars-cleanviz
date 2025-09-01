@@ -1,49 +1,49 @@
 {
   "xray_small": {
     "basic": {
-      "execution_time": 0.006623042048886418,
-      "memory_usage_mb": 6.84375,
+      "execution_time": 0.06951837509404868,
+      "memory_usage_mb": 6.390625,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "expanded": {
-      "execution_time": 0.012309375102631748,
-      "memory_usage_mb": 0.84375,
+      "execution_time": 0.02069129201117903,
+      "memory_usage_mb": 0.8125,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "high_precision": {
-      "execution_time": 0.004541459027677774,
-      "memory_usage_mb": 0.015625,
-      "success": true,
-      "error": null,
-      "result_type": "GT"
-    },
-    "with_correlation": {
-      "execution_time": 0.005729292053729296,
-      "memory_usage_mb": 0.265625,
-      "success": true,
-      "error": null,
-      "result_type": "GT"
-    },
-    "custom_percentiles": {
-      "execution_time": 0.0055435000685974956,
+      "execution_time": 0.0091964160092175,
       "memory_usage_mb": 0.03125,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
+    "with_correlation": {
+      "execution_time": 0.013564791996032,
+      "memory_usage_mb": 0.25,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "custom_percentiles": {
+      "execution_time": 0.019004084053449333,
+      "memory_usage_mb": 0.015625,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
     "strict_quality": {
-      "execution_time": 0.0044469579588621855,
+      "execution_time": 0.011809790972620249,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "dataframe_output": {
-      "execution_time": 0.0013243749272078276,
+      "execution_time": 0.0014278750168159604,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -52,202 +52,202 @@
   },
   "xray_medium": {
     "basic": {
-      "execution_time": 0.007535499986261129,
-      "memory_usage_mb": 0.234375,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
+      "execution_time": 0.014555833069607615,
+      "memory_usage_mb": 0.28125,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
     },
     "expanded": {
-      "execution_time": 0.042012167046777904,
-      "memory_usage_mb": 0.140625,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
+      "execution_time": 0.0523885409347713,
+      "memory_usage_mb": 0.9375,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
     },
     "high_precision": {
-      "execution_time": 0.005669166916050017,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
+      "execution_time": 0.01419712498318404,
+      "memory_usage_mb": 0.015625,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
     },
     "with_correlation": {
-      "execution_time": 0.007161750108934939,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
+      "execution_time": 0.019638292025774717,
+      "memory_usage_mb": 0.015625,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
     },
     "custom_percentiles": {
-      "execution_time": 0.006877167033962905,
+      "execution_time": 0.019527291995473206,
       "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
+      "success": true,
+      "error": null,
+      "result_type": "GT"
     },
     "strict_quality": {
-      "execution_time": 0.00585420907009393,
+      "execution_time": 0.012426125002093613,
       "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
+      "success": true,
+      "error": null,
+      "result_type": "GT"
     },
     "dataframe_output": {
-      "execution_time": 0.006251915940083563,
+      "execution_time": 0.0076503329910337925,
       "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
+      "success": true,
+      "error": null,
+      "result_type": "DataFrame"
     }
   },
   "xray_large": {
     "basic": {
-      "execution_time": 0.026381957926787436,
-      "memory_usage_mb": 1.84375,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "expanded": {
-      "execution_time": 0.25180145795457065,
-      "memory_usage_mb": 12.40625,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "high_precision": {
-      "execution_time": 0.025555207976140082,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "with_correlation": {
-      "execution_time": 0.027848125086165965,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "custom_percentiles": {
-      "execution_time": 0.029029291938059032,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "strict_quality": {
-      "execution_time": 0.02539279207121581,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "dataframe_output": {
-      "execution_time": 0.025363791966810822,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    }
-  },
-  "xray_wide": {
-    "basic": {
-      "execution_time": 0.023105707950890064,
-      "memory_usage_mb": 0.109375,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "expanded": {
-      "execution_time": 0.12856362492311746,
-      "memory_usage_mb": 0.125,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "high_precision": {
-      "execution_time": 0.022153374971821904,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "with_correlation": {
-      "execution_time": 0.027624084032140672,
-      "memory_usage_mb": 0.046875,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "custom_percentiles": {
-      "execution_time": 0.023847708012908697,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "strict_quality": {
-      "execution_time": 0.024871875066310167,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    },
-    "dataframe_output": {
-      "execution_time": 0.02202704199589789,
-      "memory_usage_mb": 0,
-      "success": false,
-      "error": "`arg_unique` operation not supported for dtype `object`",
-      "result_type": null
-    }
-  },
-  "xray_problematic": {
-    "basic": {
-      "execution_time": 0.007133082952350378,
-      "memory_usage_mb": 0.078125,
+      "execution_time": 0.03391637501772493,
+      "memory_usage_mb": 1.890625,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "expanded": {
-      "execution_time": 0.03331829095259309,
-      "memory_usage_mb": 0.046875,
+      "execution_time": 0.25351366703398526,
+      "memory_usage_mb": 14.234375,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "high_precision": {
-      "execution_time": 0.006858457927592099,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.04082895896863192,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "with_correlation": {
-      "execution_time": 0.008666374953463674,
+      "execution_time": 0.038765333010815084,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "custom_percentiles": {
-      "execution_time": 0.007553083007223904,
+      "execution_time": 0.042537584085948765,
       "memory_usage_mb": 0.015625,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "strict_quality": {
-      "execution_time": 0.007247417001053691,
+      "execution_time": 0.05141216702759266,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "GT"
     },
     "dataframe_output": {
-      "execution_time": 0.0046897499123588204,
+      "execution_time": 0.02851095807272941,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "DataFrame"
+    }
+  },
+  "xray_wide": {
+    "basic": {
+      "execution_time": 0.030494541977532208,
+      "memory_usage_mb": 0.109375,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "expanded": {
+      "execution_time": 0.12045254197437316,
+      "memory_usage_mb": 0.28125,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "high_precision": {
+      "execution_time": 0.026822917046956718,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "with_correlation": {
+      "execution_time": 0.03644824994262308,
+      "memory_usage_mb": 0.046875,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "custom_percentiles": {
+      "execution_time": 0.028699457994662225,
+      "memory_usage_mb": 0.015625,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "strict_quality": {
+      "execution_time": 0.030206499970518053,
+      "memory_usage_mb": 0.015625,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "dataframe_output": {
+      "execution_time": 0.027769708074629307,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "DataFrame"
+    }
+  },
+  "xray_problematic": {
+    "basic": {
+      "execution_time": 0.012893458013422787,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "expanded": {
+      "execution_time": 0.04508950002491474,
+      "memory_usage_mb": 0.0625,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "high_precision": {
+      "execution_time": 0.020201750099658966,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "with_correlation": {
+      "execution_time": 0.014763375045731664,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "custom_percentiles": {
+      "execution_time": 0.016114667057991028,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "strict_quality": {
+      "execution_time": 0.01037762500345707,
+      "memory_usage_mb": 0,
+      "success": true,
+      "error": null,
+      "result_type": "GT"
+    },
+    "dataframe_output": {
+      "execution_time": 0.009739457978866994,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -256,36 +256,36 @@
   },
   "corr_heatmap_small": {
     "default": {
-      "execution_time": 0.06603712507057935,
-      "memory_usage_mb": 9.25,
+      "execution_time": 0.46442045795265585,
+      "memory_usage_mb": 21.421875,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.002906540990807116,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.002180707990191877,
+      "memory_usage_mb": 0.0625,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.8035827920539305,
-      "memory_usage_mb": 84.875,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.3951354579767212,
+      "memory_usage_mb": 11.53125,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.1278790000360459,
-      "memory_usage_mb": 22.984375,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.08780787501018494,
+      "memory_usage_mb": 7.734375,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "no_annotations": {
-      "execution_time": 0.003761832951568067,
-      "memory_usage_mb": 0.046875,
+      "execution_time": 0.0025134169263765216,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -293,36 +293,36 @@
   },
   "dist_plot_small": {
     "default": {
-      "execution_time": 0.005065999925136566,
-      "memory_usage_mb": 0.171875,
+      "execution_time": 0.01134062500204891,
+      "memory_usage_mb": 0.109375,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.0020252499962225556,
+      "execution_time": 0.0012631670106202364,
       "memory_usage_mb": 0.03125,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.052780707948841155,
-      "memory_usage_mb": 11.46875,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0018042920855805278,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.00473395804874599,
-      "memory_usage_mb": 0.40625,
-      "success": true,
-      "error": null,
-      "result_type": "Chart"
+      "execution_time": 0.004819916910491884,
+      "memory_usage_mb": 0.46875,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "many_bins": {
-      "execution_time": 0.002021417021751404,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0013118339702486992,
+      "memory_usage_mb": 0.0625,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -330,36 +330,36 @@
   },
   "missingval_plot_small": {
     "default": {
-      "execution_time": 0.003106666961684823,
-      "memory_usage_mb": 0,
+      "execution_time": 0.006809083046391606,
+      "memory_usage_mb": 0.171875,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.0023736670846119523,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.001487292000092566,
+      "memory_usage_mb": 0.078125,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.06113741698209196,
-      "memory_usage_mb": 4.96875,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0021877919789403677,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.012954541016370058,
-      "memory_usage_mb": 0.140625,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.004470832995139062,
+      "memory_usage_mb": 2.46875,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "normalized": {
-      "execution_time": 0.002305832924321294,
-      "memory_usage_mb": 0.046875,
+      "execution_time": 0.0014758330071344972,
+      "memory_usage_mb": 0.03125,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -367,36 +367,36 @@
   },
   "corr_heatmap_medium": {
     "default": {
-      "execution_time": 0.004463708959519863,
-      "memory_usage_mb": 1.203125,
+      "execution_time": 0.0031579170608893037,
+      "memory_usage_mb": 0.109375,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.004339042003266513,
-      "memory_usage_mb": 1.234375,
+      "execution_time": 0.003300082986243069,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.08173995895776898,
-      "memory_usage_mb": 17.28125,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.002901374944485724,
+      "memory_usage_mb": 0.015625,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.013005707995034754,
-      "memory_usage_mb": 0.015625,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.005501499981619418,
+      "memory_usage_mb": 1.5625,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "no_annotations": {
-      "execution_time": 0.004049499984830618,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.0030079999705776572,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -404,36 +404,36 @@
   },
   "dist_plot_medium": {
     "default": {
-      "execution_time": 0.0018632080173119903,
+      "execution_time": 0.0013982080854475498,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.001826208084821701,
+      "execution_time": 0.0013817088911309838,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.055409915978088975,
-      "memory_usage_mb": 11.578125,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0022060410119593143,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.00629483291413635,
-      "memory_usage_mb": 2.265625,
-      "success": true,
-      "error": null,
-      "result_type": "Chart"
+      "execution_time": 0.004215541062876582,
+      "memory_usage_mb": 1.125,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "many_bins": {
-      "execution_time": 0.002018667059019208,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0013870829716324806,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -441,36 +441,36 @@
   },
   "missingval_plot_medium": {
     "default": {
-      "execution_time": 0.0022866249782964587,
-      "memory_usage_mb": 0.078125,
+      "execution_time": 0.002006125054322183,
+      "memory_usage_mb": 0.203125,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.002251958940178156,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0017937920056283474,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.09291904198471457,
-      "memory_usage_mb": 4.921875,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0022008749656379223,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.012518957955762744,
-      "memory_usage_mb": 0.125,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.004627667018212378,
+      "memory_usage_mb": 1.515625,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "normalized": {
-      "execution_time": 0.00232812506146729,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.0015786669682711363,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -478,36 +478,36 @@
   },
   "corr_heatmap_large": {
     "default": {
-      "execution_time": 0.010873749968595803,
-      "memory_usage_mb": 8.5625,
+      "execution_time": 0.008273166022263467,
+      "memory_usage_mb": 8.546875,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.009915957925841212,
+      "execution_time": 0.007517249905504286,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.10259654198307544,
-      "memory_usage_mb": 16.171875,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.007115208078175783,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.017133292043581605,
-      "memory_usage_mb": 0.140625,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.009470417047850788,
+      "memory_usage_mb": 0.171875,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "no_annotations": {
-      "execution_time": 0.00976708298549056,
-      "memory_usage_mb": 0.0625,
+      "execution_time": 0.007422916940413415,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -515,36 +515,36 @@
   },
   "dist_plot_large": {
     "default": {
-      "execution_time": 0.002113915979862213,
-      "memory_usage_mb": 0.046875,
+      "execution_time": 0.0015155419241636992,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.002201042021624744,
-      "memory_usage_mb": 1.015625,
+      "execution_time": 0.0013494999147951603,
+      "memory_usage_mb": 0.015625,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.09685712505597621,
-      "memory_usage_mb": 18.125,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.001851125038228929,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.0142153340857476,
-      "memory_usage_mb": 3.109375,
-      "success": true,
-      "error": null,
-      "result_type": "Chart"
+      "execution_time": 0.004744083969853818,
+      "memory_usage_mb": 1.0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "many_bins": {
-      "execution_time": 0.0021932920208200812,
-      "memory_usage_mb": 0.078125,
+      "execution_time": 0.0013517079642042518,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -552,36 +552,36 @@
   },
   "missingval_plot_large": {
     "default": {
-      "execution_time": 0.002527542063035071,
-      "memory_usage_mb": 0.046875,
+      "execution_time": 0.0018540829187259078,
+      "memory_usage_mb": 0.125,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.0025812500389292836,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.0018800001125782728,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.11768383404705673,
-      "memory_usage_mb": 1.578125,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0024534580297768116,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.012821416952647269,
-      "memory_usage_mb": 0.21875,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.004471666063182056,
+      "memory_usage_mb": 0.078125,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "normalized": {
-      "execution_time": 0.002578624989837408,
-      "memory_usage_mb": 0,
+      "execution_time": 0.0018958339933305979,
+      "memory_usage_mb": 0.015625,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -589,36 +589,36 @@
   },
   "corr_heatmap_wide": {
     "default": {
-      "execution_time": 0.030013208044692874,
-      "memory_usage_mb": 6.328125,
+      "execution_time": 0.018394957995042205,
+      "memory_usage_mb": 3.5,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.025169166969135404,
-      "memory_usage_mb": 3.078125,
+      "execution_time": 0.013969459105283022,
+      "memory_usage_mb": 2.90625,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.23132741602603346,
-      "memory_usage_mb": 16.765625,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.00329745898488909,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.015510916011407971,
-      "memory_usage_mb": 2.65625,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.00585283397231251,
+      "memory_usage_mb": 0.984375,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "no_annotations": {
-      "execution_time": 0.0244338340125978,
-      "memory_usage_mb": 0.28125,
+      "execution_time": 0.013292415998876095,
+      "memory_usage_mb": 0.0625,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -626,36 +626,36 @@
   },
   "dist_plot_wide": {
     "default": {
-      "execution_time": 0.001969750039279461,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0013172919861972332,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.002022291999310255,
-      "memory_usage_mb": 0.0625,
+      "execution_time": 0.001391792087815702,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.04806779196951538,
-      "memory_usage_mb": 10.421875,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0021021669963374734,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.005300207994878292,
-      "memory_usage_mb": 0.609375,
-      "success": true,
-      "error": null,
-      "result_type": "Chart"
+      "execution_time": 0.0035290420055389404,
+      "memory_usage_mb": 0.0625,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "many_bins": {
-      "execution_time": 0.0020236249547451735,
-      "memory_usage_mb": 0.0625,
+      "execution_time": 0.0012643750524148345,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -663,36 +663,36 @@
   },
   "missingval_plot_wide": {
     "default": {
-      "execution_time": 0.004550665966235101,
-      "memory_usage_mb": 0.09375,
+      "execution_time": 0.0035100000677630305,
+      "memory_usage_mb": 0.296875,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.004578874912112951,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0029958749655634165,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.35354995797388256,
-      "memory_usage_mb": 22.40625,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.00332004192750901,
+      "memory_usage_mb": 0.015625,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.01467266702093184,
-      "memory_usage_mb": 0.140625,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.005506708053871989,
+      "memory_usage_mb": 0.0625,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "normalized": {
-      "execution_time": 0.00487691699527204,
-      "memory_usage_mb": 0.078125,
+      "execution_time": 0.0030253749573603272,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -700,35 +700,35 @@
   },
   "corr_heatmap_problematic": {
     "default": {
-      "execution_time": 0.0035591659834608436,
-      "memory_usage_mb": 0.046875,
+      "execution_time": 0.0023798749316483736,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.003256583004258573,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.002386083942838013,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.0633426250424236,
-      "memory_usage_mb": 7.078125,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0023103749845176935,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.012267792015336454,
-      "memory_usage_mb": 0.234375,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.004489207989536226,
+      "memory_usage_mb": 0.609375,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "no_annotations": {
-      "execution_time": 0.003243874991312623,
+      "execution_time": 0.0024060409050434828,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -737,36 +737,36 @@
   },
   "dist_plot_problematic": {
     "default": {
-      "execution_time": 0.002051500021480024,
+      "execution_time": 0.0012307920260354877,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.0019387920619919896,
+      "execution_time": 0.0012074579717591405,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.05813070805743337,
-      "memory_usage_mb": 11.125,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0018487080233171582,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.006752749904990196,
-      "memory_usage_mb": 2.71875,
-      "success": true,
-      "error": null,
-      "result_type": "Chart"
+      "execution_time": 0.004252874990925193,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "many_bins": {
-      "execution_time": 0.001944083021953702,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0012302499962970614,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -774,36 +774,36 @@
   },
   "missingval_plot_problematic": {
     "default": {
-      "execution_time": 0.002163750003091991,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.0014687079237774014,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "plotly": {
-      "execution_time": 0.0022458750754594803,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.0017574579687789083,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
     },
     "seaborn": {
-      "execution_time": 0.0726340829860419,
-      "memory_usage_mb": 0.84375,
-      "success": true,
-      "error": null,
-      "result_type": "Figure"
+      "execution_time": 0.0020293330308049917,
+      "memory_usage_mb": 0,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "altair": {
-      "execution_time": 0.012897625099867582,
-      "memory_usage_mb": 0.125,
-      "success": true,
-      "error": null,
-      "result_type": "LayerChart"
+      "execution_time": 0.0047759999288246036,
+      "memory_usage_mb": 0.015625,
+      "success": false,
+      "error": "numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject",
+      "result_type": null
     },
     "normalized": {
-      "execution_time": 0.0022512919967994094,
-      "memory_usage_mb": 0.03125,
+      "execution_time": 0.0017206660704687238,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "Figure"
@@ -811,21 +811,21 @@
   },
   "convert_datatypes_small": {
     "default": {
-      "execution_time": 0.0007626659935340285,
-      "memory_usage_mb": 0.1875,
+      "execution_time": 0.0011782500660046935,
+      "memory_usage_mb": 0.125,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_categoricals": {
-      "execution_time": 0.00026579201221466064,
+      "execution_time": 0.00019483291544020176,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_downcasting": {
-      "execution_time": 4.9042049795389175e-05,
+      "execution_time": 3.5917037166655064e-05,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -834,22 +834,22 @@
   },
   "drop_missing_small": {
     "drop_rows": {
-      "execution_time": 0.0009318329393863678,
-      "memory_usage_mb": 0.84375,
+      "execution_time": 0.002532874932512641,
+      "memory_usage_mb": 0.421875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "drop_columns": {
-      "execution_time": 0.000434375018812716,
+      "execution_time": 0.00022825004998594522,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "thresh_50pct": {
-      "execution_time": 0.0006085420027375221,
-      "memory_usage_mb": 0.75,
+      "execution_time": 0.002719333046115935,
+      "memory_usage_mb": 0.40625,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -857,29 +857,29 @@
   },
   "data_cleaning_small": {
     "default": {
-      "execution_time": 0.0017477499786764383,
-      "memory_usage_mb": 2.1875,
+      "execution_time": 0.005307416897267103,
+      "memory_usage_mb": 1.890625,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_optimization": {
-      "execution_time": 0.0011938329553231597,
-      "memory_usage_mb": 0.609375,
+      "execution_time": 0.001088791061192751,
+      "memory_usage_mb": 0.546875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "keep_duplicates": {
-      "execution_time": 0.001100708032026887,
+      "execution_time": 0.0007697920082136989,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_outlier_removal": {
-      "execution_time": 0.0009046250488609076,
-      "memory_usage_mb": 0.328125,
+      "execution_time": 0.0007139999652281404,
+      "memory_usage_mb": 0.46875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -887,21 +887,21 @@
   },
   "convert_datatypes_medium": {
     "default": {
-      "execution_time": 0.0008100830018520355,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0006792499916628003,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_categoricals": {
-      "execution_time": 0.000820209039375186,
+      "execution_time": 0.0006961670005694032,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_downcasting": {
-      "execution_time": 7.208297029137611e-05,
+      "execution_time": 5.249993409961462e-05,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -910,22 +910,22 @@
   },
   "drop_missing_medium": {
     "drop_rows": {
-      "execution_time": 0.010386124951764941,
-      "memory_usage_mb": 1.859375,
+      "execution_time": 0.0007842909544706345,
+      "memory_usage_mb": 1.296875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "drop_columns": {
-      "execution_time": 0.0011434579500928521,
+      "execution_time": 0.00038804090581834316,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "thresh_50pct": {
-      "execution_time": 0.008724958053790033,
-      "memory_usage_mb": 1.140625,
+      "execution_time": 0.0007436659652739763,
+      "memory_usage_mb": 0.875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -933,29 +933,29 @@
   },
   "data_cleaning_medium": {
     "default": {
-      "execution_time": 0.013190000085160136,
-      "memory_usage_mb": 0,
+      "execution_time": 0.0028637080686166883,
+      "memory_usage_mb": 4.5,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_optimization": {
-      "execution_time": 0.01104191702324897,
-      "memory_usage_mb": 0,
+      "execution_time": 0.0028124169912189245,
+      "memory_usage_mb": 1.9375,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "keep_duplicates": {
-      "execution_time": 0.0026380419731140137,
+      "execution_time": 0.001606374979019165,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_outlier_removal": {
-      "execution_time": 0.010472874972037971,
-      "memory_usage_mb": 0.59375,
+      "execution_time": 0.002327541005797684,
+      "memory_usage_mb": 1.28125,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -963,21 +963,21 @@
   },
   "convert_datatypes_large": {
     "default": {
-      "execution_time": 0.0034060420002788305,
-      "memory_usage_mb": 0,
+      "execution_time": 0.003351207938976586,
+      "memory_usage_mb": 0.140625,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_categoricals": {
-      "execution_time": 0.0034717079252004623,
+      "execution_time": 0.0033589170780032873,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_downcasting": {
-      "execution_time": 8.945900481194258e-05,
+      "execution_time": 6.683310493826866e-05,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -986,22 +986,22 @@
   },
   "drop_missing_large": {
     "drop_rows": {
-      "execution_time": 0.0495872920146212,
-      "memory_usage_mb": 6.296875,
+      "execution_time": 0.0011472919723019004,
+      "memory_usage_mb": 2.203125,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "drop_columns": {
-      "execution_time": 0.0038257919950410724,
+      "execution_time": 0.0006104169879108667,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "thresh_50pct": {
-      "execution_time": 0.023517707944847643,
-      "memory_usage_mb": 6.6875,
+      "execution_time": 0.0015037909615784883,
+      "memory_usage_mb": 6.96875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -1009,29 +1009,29 @@
   },
   "data_cleaning_large": {
     "default": {
-      "execution_time": 0.09132350003346801,
-      "memory_usage_mb": 18.046875,
+      "execution_time": 0.010242542019113898,
+      "memory_usage_mb": 25.1875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_optimization": {
-      "execution_time": 0.08698899997398257,
-      "memory_usage_mb": 0,
+      "execution_time": 0.008957917103543878,
+      "memory_usage_mb": 4.8125,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "keep_duplicates": {
-      "execution_time": 0.009251542040146887,
+      "execution_time": 0.005766082904301584,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_outlier_removal": {
-      "execution_time": 0.08177229203283787,
-      "memory_usage_mb": 0.9375,
+      "execution_time": 0.007771708071231842,
+      "memory_usage_mb": 3.8125,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -1039,21 +1039,21 @@
   },
   "convert_datatypes_wide": {
     "default": {
-      "execution_time": 0.0023341249907389283,
-      "memory_usage_mb": 0,
+      "execution_time": 0.0019687499152496457,
+      "memory_usage_mb": 0.046875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_categoricals": {
-      "execution_time": 0.0023094579810276628,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0019388750661164522,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_downcasting": {
-      "execution_time": 0.0003465829649940133,
+      "execution_time": 0.00018595904111862183,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -1062,22 +1062,22 @@
   },
   "drop_missing_wide": {
     "drop_rows": {
-      "execution_time": 0.0038588749011978507,
-      "memory_usage_mb": 1.71875,
+      "execution_time": 0.0023874170146882534,
+      "memory_usage_mb": 0.875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "drop_columns": {
-      "execution_time": 0.002591666067019105,
-      "memory_usage_mb": 0.015625,
+      "execution_time": 0.0015197080792859197,
+      "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "thresh_50pct": {
-      "execution_time": 0.006243208074010909,
-      "memory_usage_mb": 1.125,
+      "execution_time": 0.0017683330224826932,
+      "memory_usage_mb": 1.375,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -1085,29 +1085,29 @@
   },
   "data_cleaning_wide": {
     "default": {
-      "execution_time": 0.024040625081397593,
-      "memory_usage_mb": 0.65625,
+      "execution_time": 0.006805334007367492,
+      "memory_usage_mb": 0.828125,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_optimization": {
-      "execution_time": 0.02471220795996487,
-      "memory_usage_mb": 0.53125,
+      "execution_time": 0.007418374996632338,
+      "memory_usage_mb": 0.4375,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "keep_duplicates": {
-      "execution_time": 0.007497041951864958,
+      "execution_time": 0.005694707971997559,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_outlier_removal": {
-      "execution_time": 0.022382666007615626,
-      "memory_usage_mb": 0.703125,
+      "execution_time": 0.004644666914828122,
+      "memory_usage_mb": 0.15625,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -1115,21 +1115,21 @@
   },
   "convert_datatypes_problematic": {
     "default": {
-      "execution_time": 0.0005986250471323729,
+      "execution_time": 0.000504292082041502,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_categoricals": {
-      "execution_time": 0.0006601660279557109,
+      "execution_time": 0.0004805830540135503,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_downcasting": {
-      "execution_time": 5.5916025303304195e-05,
+      "execution_time": 4.545808769762516e-05,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
@@ -1138,22 +1138,22 @@
   },
   "drop_missing_problematic": {
     "drop_rows": {
-      "execution_time": 0.0005147079937160015,
+      "execution_time": 0.00037533300928771496,
       "memory_usage_mb": 0.0625,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "drop_columns": {
-      "execution_time": 0.0004999169614166021,
+      "execution_time": 0.00028145802207291126,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "thresh_50pct": {
-      "execution_time": 0.0005586249753832817,
-      "memory_usage_mb": 0.09375,
+      "execution_time": 0.0004652079660445452,
+      "memory_usage_mb": 0.046875,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
@@ -1161,29 +1161,29 @@
   },
   "data_cleaning_problematic": {
     "default": {
-      "execution_time": 0.002877000020816922,
-      "memory_usage_mb": 0.46875,
+      "execution_time": 0.001591542037203908,
+      "memory_usage_mb": 0.03125,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_optimization": {
-      "execution_time": 0.0020301659824326634,
-      "memory_usage_mb": 0.296875,
+      "execution_time": 0.0017805410316213965,
+      "memory_usage_mb": 0.09375,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "keep_duplicates": {
-      "execution_time": 0.0017408750718459487,
+      "execution_time": 0.0012013749219477177,
       "memory_usage_mb": 0,
       "success": true,
       "error": null,
       "result_type": "DataFrame"
     },
     "no_outlier_removal": {
-      "execution_time": 0.00214850006159395,
-      "memory_usage_mb": 0.140625,
+      "execution_time": 0.0012427499750629067,
+      "memory_usage_mb": 0.15625,
       "success": true,
       "error": null,
       "result_type": "DataFrame"

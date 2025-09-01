@@ -6,18 +6,83 @@ import numpy as np
 import time
 import sys
 
-# Optional scipy imports
-try:
-    from scipy import stats
-    SCIPY_AVAILABLE = True
-except ImportError:
-    SCIPY_AVAILABLE = False
-    stats = None
+# Optional scipy imports - lazy loaded to avoid import warnings
+SCIPY_AVAILABLE = None  # Will be checked when needed
+stats = None
+
+
+def _check_scipy_availability():
+    """Check if SciPy is available and import it if needed."""
+    global SCIPY_AVAILABLE, stats
+    
+    if SCIPY_AVAILABLE is None:
+        try:
+            from scipy import stats as scipy_stats
+            stats = scipy_stats
+            SCIPY_AVAILABLE = True
+        except (ImportError, ValueError):
+            # Handle both import errors and binary incompatibility
+            SCIPY_AVAILABLE = False
+            stats = None
+    
+    return SCIPY_AVAILABLE
+
+
+def _format_memory_usage(memory_mb: float) -> str:
+    """Format memory usage with appropriate units (KB or MB)."""
+    if memory_mb < 1.0:
+        memory_kb = memory_mb * 1024
+        return f"{memory_kb:.1f} KB"
+    else:
+        return f"{memory_mb:.1f} MB"
+
+
+def _get_columns_to_analyze(df: pl.DataFrame, include: str | list[str] | None) -> list[str]:
+    """
+    Filter columns based on include parameter.
+    
+    Parameters
+    ----------
+    df : pl.DataFrame
+        The DataFrame to analyze
+    include : str, list[str], or None
+        Which data types to include
+        
+    Returns
+    -------
+    list[str]
+        List of column names to analyze
+    """
+    if include is None or include == 'numeric':
+        # Default behavior: only numeric columns)
+        return [c for c, dt in zip(df.columns, df.dtypes) if dt.is_numeric()]
+    
+    elif include == 'all':
+        # Include all columns
+        return df.columns
+    
+    elif include == 'string':
+        # Only string/text columns
+        return [c for c, dt in zip(df.columns, df.dtypes) if dt in (pl.String, pl.Utf8)]
+    
+    elif include == 'temporal':
+        # Only date/datetime columns
+        return [c for c, dt in zip(df.columns, df.dtypes) if dt.is_temporal()]
+    
+    elif isinstance(include, list):
+        # Specific data type names
+        include_types = set(include)
+        return [c for c, dt in zip(df.columns, df.dtypes) if str(dt) in include_types]
+    
+    else:
+        raise ValueError(f"Invalid include parameter: {include}. "
+                        f"Must be None, 'all', 'numeric', 'string', 'temporal', or list of dtype names.")
 
 
 def xray(
     df: pl.DataFrame,
     *,
+    include: str | list[str] | None = None,
     great_tables: bool = True,
     expanded: bool = False,
     percentiles: list[float] | None = None,
@@ -36,8 +101,7 @@ def xray(
     sep_mark: str = ",",
     dec_mark: str = ".",
     compact: bool = False,
-    pattern: str | None = None,
-    locale: str | None = None
+    pattern: str | None = None
 ) -> Union[GT, pl.DataFrame]:
     """
     X-ray your data: comprehensive statistical analysis with quality assessment.
@@ -50,13 +114,21 @@ def xray(
     ----------
     df : pl.DataFrame
         The input DataFrame to summarize.
+    include : str, list[str], or None, default None
+        Which data types to include in the analysis.
+        - None (default): Only numeric columns (Int8, Int16, Int32, Int64, Float32, Float64)
+        - 'all': All columns regardless of data type
+        - 'numeric': Only numeric columns (same as None)
+        - 'string': Only string/text columns
+        - 'temporal': Only date/datetime columns
+        - list of strings: Specific data type names (e.g., ['Float64', 'String'])
     great_tables : bool, default True
         Whether to return a formatted Great Tables object (True) or standard
         Polars DataFrame output (False).
     expanded : bool, default False
         If True, shows all available statistics. If False, shows only essential
-        metrics: dtype, count, mean, min, Q25, median, Q75, max, IQR, 
-        pct_missing, n_outliers.
+        metrics: dtype, count, null_count, mean, std, min, 25%, 50%, 75%, max, 
+        iqr, pct_missing, n_outliers, skew.
     percentiles : list[float] | None, optional
         Custom percentiles to calculate. Default: [0.25, 0.5, 0.75].
         Example: [0.1, 0.25, 0.5, 0.75, 0.9] for additional quantiles.
@@ -102,9 +174,6 @@ def xray(
         If True, large numbers are auto-scaled with suffixes (e.g., "10K", "1.5M").
     pattern : str | None, optional
         Text pattern for decorating formatted values (e.g., "[{x}]").
-    locale : str | None, optional
-        Locale ID for region-specific formatting (e.g., "en", "fr", "de-AT").
-        Overrides sep_mark and dec_mark when specified.
 
     Returns
     -------
@@ -114,26 +183,32 @@ def xray(
 
     Examples
     --------
-    Basic data X-ray (minimal metrics):
+    Basic data X-ray (numeric columns only):
     
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({
     ...     'price': [100, 200, 150, 300, 250],
     ...     'volume': [1000, 1500, 1200, 2000, 1800],
+    ...     'category': ['A', 'B', 'A', 'C', 'B'],
     ...     'rating': [4.5, 3.8, 4.2, 4.9, 4.1]
     ... })
-    >>> table = plc.xray(df)
+    >>> table = ps.xray(df)  # Only shows price, volume, rating (numeric columns)
     >>> table.show()
     
-    Comprehensive data analysis:
+    Include all columns (numeric and non-numeric):
     
-    >>> full_xray = plc.xray(df, expanded=True)
+    >>> full_xray = ps.xray(df, include='all')  # Shows all columns
     
-    With correlation and custom tests:
+    Include only string columns:
     
-    >>> advanced_xray = plc.xray(
+    >>> string_xray = ps.xray(df, include='string')  # Only shows category
+    
+    Comprehensive analysis with all columns:
+    
+    >>> advanced_xray = ps.xray(
     ...     df, 
+    ...     include='all',
     ...     expanded=True,
     ...     corr_target='price',
     ...     normality_test='anderson',
@@ -142,8 +217,9 @@ def xray(
     
     Custom quality thresholds:
     
-    >>> quality_xray = plc.xray(
+    >>> quality_xray = ps.xray(
     ...     df,
+    ...     include='all',
     ...     missing_threshold=0.2,  # Flag >20% missing
     ...     skew_threshold=1.5,     # Flag |skew| > 1.5
     ...     shakiness_threshold=1   # Flag any quality issue
@@ -151,11 +227,13 @@ def xray(
     
     Advanced formatting options:
     
-    >>> formatted_xray = plc.xray(
+    >>> formatted_xray = ps.xray(
     ...     df,
+    ...     include='all',
     ...     decimals=3,            # 3 decimal places
     ...     compact=True,          # Use "10K" instead of "10,000"
-    ...     locale="fr",           # French formatting
+    ...     sep_mark=" ",          # Space as thousands separator
+    ...     dec_mark=",",          # Comma as decimal separator
     ...     pattern="({x})"        # Wrap values in parentheses
     ... )
 
@@ -177,9 +255,18 @@ def xray(
     # Start timing for performance measurement
     start_time = time.perf_counter()
     
-    # Calculate DataFrame memory usage
-    memory_usage_bytes = df.estimated_size("bytes")
-    memory_usage_mb = memory_usage_bytes / 1024 / 1024
+    # Calculate DataFrame memory usage - handle version compatibility
+    try:
+        memory_usage_bytes = df.estimated_size("bytes")
+        memory_usage_mb = memory_usage_bytes / 1024 / 1024
+    except Exception:
+        # Fallback for older Polars versions or compatibility issues
+        try:
+            memory_usage_bytes = df.estimated_size()
+            memory_usage_mb = memory_usage_bytes / 1024 / 1024
+        except Exception:
+            # Ultimate fallback - estimate based on shape and dtype
+            memory_usage_mb = df.shape[0] * df.shape[1] * 8 / 1024 / 1024  # Rough estimate
     
     # Set default percentiles
     if percentiles is None:
@@ -209,9 +296,9 @@ def xray(
         if not target_dtype.is_numeric():
             raise ValueError(f"Target column '{corr_target}' must be numeric, got {target_dtype}")
     
-    # Get all columns for analysis (both numeric and non-numeric)
-    all_cols = df.columns
-    numeric_cols = [c for c, dt in zip(df.columns, df.dtypes) if dt.is_numeric()]
+    # Filter columns based on include parameter)
+    all_cols = _get_columns_to_analyze(df, include)
+    numeric_cols = [c for c, dt in zip(all_cols, [df[c].dtype for c in all_cols]) if dt.is_numeric()]
     
     # Calculate comprehensive statistics for all columns
     stats_data = []
@@ -231,12 +318,21 @@ def xray(
             'Column': col,
             'Dtype': str(dtype),
             'Count': n_valid,
-            'N_Missing': n_missing,
+            'null_count': n_missing,
             'Pct_Missing': round(pct_missing, 2)
         }
         
-        # Basic counts and ratios
-        n_unique = series.n_unique()
+        # Basic counts and ratios - handle object dtypes safely
+        try:
+            n_unique = series.n_unique()
+        except Exception:
+            # Fallback for object dtypes that don't support arg_unique
+            try:
+                n_unique = len(series.unique())
+            except Exception:
+                # Ultimate fallback - count via groupby
+                n_unique = series.drop_nulls().value_counts().height
+        
         col_stats['N_Unique'] = n_unique
         col_stats['Uniqueness_Ratio'] = round(n_unique / n_total, 4) if n_total > 0 else 0
         
@@ -253,14 +349,14 @@ def xray(
             max_val = float(series_clean.max())
             
             col_stats['Mean'] = round(mean_val, 3)
-            col_stats['Std'] = round(std_val, 3) if std_val is not None else None
+            col_stats['std'] = round(std_val, 3) if std_val is not None else None
             col_stats['Min'] = round(min_val, 3)
             col_stats['Max'] = round(max_val, 3)
             
             # IQR
             if 0.25 in percentiles and 0.75 in percentiles:
-                q25 = quantile_stats.get('Q25')
-                q75 = quantile_stats.get('Q75') 
+                q25 = quantile_stats.get('25%')
+                q75 = quantile_stats.get('75%') 
                 if q25 is not None and q75 is not None:
                     col_stats['IQR'] = round(q75 - q25, 3)
             
@@ -274,6 +370,13 @@ def xray(
             col_stats['Pct_Pos'] = round(n_pos / n_valid * 100, 2) if n_valid > 0 else 0
             col_stats['Pct_Neg'] = round(n_neg / n_valid * 100, 2) if n_valid > 0 else 0
             
+            # Skewness (always calculated for default view)
+            if n_valid > 2:
+                skew_val = float(series_clean.skew())
+                col_stats['skew'] = round(skew_val, 3)
+            else:
+                col_stats['skew'] = None
+            
             # Advanced statistics (expanded mode)
             if expanded:
                 # MAD (Median Absolute Deviation)
@@ -282,11 +385,8 @@ def xray(
                     mad = (series_clean - median_val).abs().median()
                     col_stats['MAD'] = round(float(mad), 3)
                 
-                # Skewness and Kurtosis
+                # Kurtosis (expanded mode only)
                 if n_valid > 2:
-                    skew_val = float(series_clean.skew())
-                    col_stats['Skewness'] = round(skew_val, 3)
-                    
                     # Calculate kurtosis (excess kurtosis)
                     kurt_val = _calculate_kurtosis(series_clean.to_numpy())
                     col_stats['Kurtosis'] = round(kurt_val, 3)
@@ -295,7 +395,7 @@ def xray(
                 col_stats['Opt_Dtype'] = _suggest_optimal_dtype(series_clean, dtype)
                 
                 # Statistical tests (if scipy available)
-                if SCIPY_AVAILABLE and n_valid > 3:
+                if _check_scipy_availability() and n_valid > 3:
                     normality_result = _test_normality(series_clean.to_numpy(), normality_test)
                     col_stats['Normality_Test'] = normality_result
                     
@@ -309,12 +409,15 @@ def xray(
             col_stats['Pct_Outliers'] = round(pct_outliers, 2)
             
             # Correlation with target
-            if corr_target and col != corr_target:
-                try:
-                    corr_val = df.select([pl.corr(corr_target, col)]).item()
-                    col_stats['Correlation'] = round(corr_val, 3) if corr_val is not None else None
-                except:
-                    col_stats['Correlation'] = None
+            if corr_target:
+                if col == corr_target:
+                    col_stats['Correlation'] = '-'  # Target column shows '-' instead of None
+                else:
+                    try:
+                        corr_val = df.select([pl.corr(corr_target, col)]).item()
+                        col_stats['Correlation'] = round(corr_val, 3) if corr_val is not None else None
+                    except:
+                        col_stats['Correlation'] = None
         
         else:
             # Non-numeric columns - set numeric stats to None/0
@@ -329,11 +432,18 @@ def xray(
             
             if expanded:
                 col_stats['MAD'] = None
-                col_stats['Skewness'] = None  
+                col_stats['skew'] = None  
                 col_stats['Kurtosis'] = None
                 col_stats['Opt_Dtype'] = _suggest_optimal_dtype(series_clean, dtype)
                 col_stats['Normality_Test'] = "N/A (non-numeric)"
                 col_stats['Uniformity_Test'] = "N/A (non-numeric)"
+            
+            # Correlation with target for non-numeric columns
+            if corr_target:
+                if col == corr_target:
+                    col_stats['Correlation'] = '-'  # Target column shows '-' instead of None
+                else:
+                    col_stats['Correlation'] = None  # Non-numeric columns can't correlate
         
         # Calculate shakiness score
         shakiness_score = _calculate_shakiness_score(
@@ -348,10 +458,27 @@ def xray(
     # Create DataFrame
     summary_df = pl.DataFrame(stats_data)
     
+    # Apply column filtering based on expanded mode
+    if expanded:
+        final_df = summary_df
+    else:
+        # Minimal mode - only essential columns (user specified)
+        essential_cols = ['Column', 'Dtype', 'Count', 'null_count', 'Mean', 'std', 'Min', 
+                         '25%', '50%', '75%', 'Max', 'IQR', 'Pct_Missing', 'N_Outliers', 'skew']
+        
+        # Only include the essential columns that exist in the dataframe
+        available_cols = [c for c in essential_cols if c in summary_df.columns]
+        
+        # Add correlation at the very end if specified
+        if corr_target and 'Correlation' in summary_df.columns:
+            available_cols.append('Correlation')
+        
+        final_df = summary_df.select(available_cols)
+
     # Return standard DataFrame if great_tables=False
     if not great_tables:
-        return summary_df
-    
+        return final_df
+
     # Build Great Tables object
     if expanded:
         # Full statistics mode
@@ -359,47 +486,23 @@ def xray(
         end_time = time.perf_counter()
         execution_time_ms = (end_time - start_time) * 1000
         
-        return _build_expanded_gt_table(summary_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern, locale)
+        return _build_expanded_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern)
     else:
-        # Minimal mode - only essential columns
-        essential_cols = ['Column', 'Dtype', 'Count', 'Mean', 'Min', 'Median', 'Max', 
-                         'IQR', 'Pct_Missing', 'N_Outliers', 'Quality_Flag']
-        
-        # Add quantile columns that exist
-        quantile_cols = []
-        for p in percentiles:
-            label = _percentile_to_label(p)
-            if label in summary_df.columns and label not in essential_cols:
-                quantile_cols.append(label)
-        
-        if corr_target:
-            essential_cols.append('Correlation')
-        
-        # Select only essential columns that exist
-        available_cols = [c for c in essential_cols if c in summary_df.columns]
-        available_cols += quantile_cols
-        
-        minimal_df = summary_df.select(available_cols)
-        
         # Calculate timing
         end_time = time.perf_counter()
         execution_time_ms = (end_time - start_time) * 1000
         
-        return _build_minimal_gt_table(minimal_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, decimals, sep_mark, dec_mark, compact, pattern, locale)
+        return _build_minimal_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, decimals, sep_mark, dec_mark, compact, pattern)
 
 
 # Helper Functions
 
 def _percentile_to_label(p: float) -> str:
-    """Convert percentile float to column label."""
-    if p == 0.25:
-        return "Q25"
-    elif p == 0.5:
-        return "Median"
-    elif p == 0.75:
-        return "Q75"
+    """Convert percentile float to column label in percent format."""
+    if p == 0.5:
+        return "50%"  # Keep 50% instead of "Median" for consistency
     else:
-        return f"P{int(p*100)}"
+        return f"{int(p*100)}%"
 
 
 def _calculate_quantiles(series: pl.Series, percentiles: list[float]) -> dict:
@@ -470,7 +573,15 @@ def _suggest_optimal_dtype(series: pl.Series, current_dtype) -> str:
     
     elif current_dtype == pl.String:
         # Check if categorical would be better
-        n_unique = series.n_unique()
+        try:
+            n_unique = series.n_unique()
+        except Exception:
+            # Fallback for object dtypes
+            try:
+                n_unique = len(series.unique())
+            except Exception:
+                n_unique = series.drop_nulls().value_counts().height
+        
         n_total = len(series)
         if n_unique / n_total < 0.5:  # Less than 50% unique
             return "Categorical"
@@ -481,7 +592,7 @@ def _suggest_optimal_dtype(series: pl.Series, current_dtype) -> str:
 
 def _test_normality(data: np.ndarray, test_type: str) -> str:
     """Perform normality test and return formatted result."""
-    if not SCIPY_AVAILABLE:
+    if not _check_scipy_availability():
         return "N/A (scipy not available)"
     
     if len(data) < 3:
@@ -524,7 +635,7 @@ def _test_normality(data: np.ndarray, test_type: str) -> str:
 
 def _test_uniformity(data: np.ndarray, test_type: str) -> str:
     """Perform uniformity test and return formatted result."""
-    if not SCIPY_AVAILABLE:
+    if not _check_scipy_availability():
         return "N/A (scipy not available)"
     
     if len(data) < 5:
@@ -656,14 +767,13 @@ def _build_minimal_gt_table(
     sep_mark: str,
     dec_mark: str,
     compact: bool,
-    pattern: str | None,
-    locale: str | None
+    pattern: str | None
 ) -> GT:
     """Build minimal Great Tables object."""
     # Determine column organization
-    basic_cols = ["Dtype", "Count", "Mean", "Min", "Q25", "Median", "Q75", "Max"]
-    essential_cols = ["IQR", "Pct_Missing", "N_Outliers"]
-    quality_cols = ["Quality_Flag"]
+    basic_cols = ["Dtype", "Count", "null_count", "Mean", "std", "Min", "25%", "50%", "75%", "Max"]
+    essential_cols = ["IQR", "Pct_Missing", "N_Outliers", "skew"]
+    quality_cols = []
     
     # Filter to existing columns
     basic_cols = [c for c in basic_cols if c in summary_df.columns]
@@ -674,22 +784,21 @@ def _build_minimal_gt_table(
         GT(summary_df)
         .tab_header(
             title="🔬 DataFrame X-ray",
-            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({memory_mb:.1f} MB in memory) - X-rayed in {execution_ms:.0f} ms"
+            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
         )
         .tab_spanner(label="Basic Statistics", columns=basic_cols)
         .tab_spanner(label="Key Metrics", columns=essential_cols)
         .tab_spanner(label="Quality", columns=quality_cols)
-        .fmt_integer(columns=["Count", "N_Outliers"], sep_mark=sep_mark, locale=locale)
+        .fmt_integer(columns=["Count", "null_count", "N_Outliers"], sep_mark=sep_mark)
         .fmt_number(
-            columns=[c for c in ["Mean", "Min", "Q25", "Median", "Q75", "Max", "IQR"] if c in summary_df.columns], 
+            columns=[c for c in ["Mean", "std", "Min", "25%", "50%", "75%", "Max", "IQR", "skew"] if c in summary_df.columns], 
             decimals=decimals, 
             sep_mark=sep_mark, 
             dec_mark=dec_mark,
             compact=compact,
-            pattern=pattern,
-            locale=locale
+            **({"pattern": pattern} if pattern is not None else {})
         )
-        .fmt_number(columns=["Pct_Missing"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
+        .fmt_number(columns=["Pct_Missing"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark)
         .cols_align(align="center", columns=basic_cols + essential_cols + quality_cols)
         .cols_align(align="left", columns=["Column"])
         .tab_options(
@@ -704,7 +813,7 @@ def _build_minimal_gt_table(
         gt_table = (
             gt_table
             .tab_spanner(label=f"Correlation with '{corr_target}'", columns=["Correlation"])
-            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
+            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark)
             .cols_align(align="center", columns=["Correlation"])
         )
     
@@ -723,16 +832,15 @@ def _build_expanded_gt_table(
     sep_mark: str,
     dec_mark: str,
     compact: bool,
-    pattern: str | None,
-    locale: str | None
+    pattern: str | None
 ) -> GT:
     """Build expanded Great Tables object with all statistics."""
     # Organize columns by category
-    basic_cols = ["Dtype", "Count", "Mean", "Std", "Min", "Max"]
+    basic_cols = ["Dtype", "Count", "Mean", "std", "Min", "Max"]
     quantile_cols = [_percentile_to_label(p) for p in percentiles if _percentile_to_label(p) in summary_df.columns]
     
-    distribution_cols = ["IQR", "Skewness", "Kurtosis", "MAD"]
-    count_cols = ["N_Missing", "Pct_Missing", "N_Unique", "Uniqueness_Ratio", "N_Zero", "Pct_Zero", "Pct_Pos", "Pct_Neg"]
+    distribution_cols = ["IQR", "skew", "Kurtosis", "MAD"]
+    count_cols = ["null_count", "Pct_Missing", "N_Unique", "Uniqueness_Ratio", "N_Zero", "Pct_Zero", "Pct_Pos", "Pct_Neg"]
     outlier_cols = ["N_Outliers", "Pct_Outliers"]
     test_cols = ["Normality_Test", "Uniformity_Test"]
     quality_cols = ["Opt_Dtype", "Shakiness_Score", "Quality_Flag"]
@@ -748,8 +856,8 @@ def _build_expanded_gt_table(
     gt_table = (
         GT(summary_df)
         .tab_header(
-            title="🔬 Comprehensive DataFrame X-ray",
-            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({memory_mb:.1f} MB in memory) - X-rayed in {execution_ms:.0f} ms • Deep Quality Analysis"
+            title="🔬 Expanded Statistics",
+            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
         )
         .tab_spanner(label="Basic Statistics", columns=basic_cols)
         .tab_spanner(label="Quantiles", columns=quantile_cols)
@@ -758,19 +866,18 @@ def _build_expanded_gt_table(
         .tab_spanner(label="Outliers", columns=outlier_cols)
         .tab_spanner(label="Statistical Tests", columns=test_cols)
         .tab_spanner(label="Quality Assessment", columns=quality_cols)
-        .fmt_integer(columns=["Count", "N_Missing", "N_Unique", "N_Zero", "N_Outliers", "Shakiness_Score"], sep_mark=sep_mark, locale=locale)
+        .fmt_integer(columns=["Count", "null_count", "N_Unique", "N_Zero", "N_Outliers", "Shakiness_Score"], sep_mark=sep_mark)
         .fmt_number(
-            columns=["Mean", "Std", "Min", "Max", "IQR", "MAD"] + quantile_cols, 
+            columns=["Mean", "std", "Min", "Max", "IQR", "MAD"] + quantile_cols, 
             decimals=decimals, 
             sep_mark=sep_mark, 
             dec_mark=dec_mark,
             compact=compact,
-            pattern=pattern,
-            locale=locale
+            **({"pattern": pattern} if pattern is not None else {})
         )
-        .fmt_number(columns=["Skewness", "Kurtosis"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
-        .fmt_number(columns=["Pct_Missing", "Pct_Zero", "Pct_Pos", "Pct_Neg", "Pct_Outliers"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
-        .fmt_number(columns=["Uniqueness_Ratio"], decimals=4, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
+        .fmt_number(columns=["skew", "Kurtosis"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark)
+        .fmt_number(columns=["Pct_Missing", "Pct_Zero", "Pct_Pos", "Pct_Neg", "Pct_Outliers"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark)
+        .fmt_number(columns=["Uniqueness_Ratio"], decimals=4, sep_mark=sep_mark, dec_mark=dec_mark)
         .cols_align(align="center", columns=basic_cols + quantile_cols + distribution_cols + count_cols + outlier_cols + ["Shakiness_Score"])
         .cols_align(align="left", columns=["Column", "Opt_Dtype", "Quality_Flag"] + test_cols)
         .tab_options(
@@ -785,7 +892,7 @@ def _build_expanded_gt_table(
         gt_table = (
             gt_table
             .tab_spanner(label=f"Correlation with '{corr_target}'", columns=["Correlation"])
-            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark, locale=locale)
+            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark)
             .cols_align(align="center", columns=["Correlation"])
         )
     
