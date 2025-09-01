@@ -1,7 +1,7 @@
 from .clean import clean_column_names
 from .plots import corr_heatmap, dist_plot, distplot, missingval_plot, cat_plot, corr_plot, convert_datatypes, drop_missing, data_cleaning
 from .utils import save_fig
-from .profiler import quick_profile
+from .profiler import summary
 
 __all__ = [
     "cat_plot",        # New klib function
@@ -14,7 +14,7 @@ __all__ = [
     "distplot",        # Backward compatibility
     "drop_missing",    # New klib function
     "missingval_plot",
-    "quick_profile",   # Enhanced profiling with Great Tables
     "save_fig",
+    "summary",         # Beautiful DataFrame summary with Great Tables
 ]
 __version__ = "0.4.1"
