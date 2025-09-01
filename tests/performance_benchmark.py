@@ -7,7 +7,7 @@ import time
 import psutil
 import numpy as np
 import polars as pl
-import pl_cleanviz as plc
+import polarscope as plc
 from typing import Dict, List, Tuple, Callable, Any
 import warnings
 import gc

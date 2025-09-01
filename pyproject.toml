@@ -1,7 +1,7 @@
 [project]
-name = "pl-cleanviz"
-version = "0.4.1"
-description = "Polars-only utilities: clean column names + correlation heatmap + distplot + missing values + save_fig + mini-profiler."
+name = "polarscope"
+version = "1.0.0"
+description = "🔬 Professional data inspection and visualization toolkit for Polars - featuring advanced X-ray analysis, comprehensive plotting, and data quality assessment."
 authors = [{ name = "Anders & Co." }]
 requires-python = ">=3.9"
 dependencies = [
@@ -14,6 +14,10 @@ license = { text = "MIT" }
 [project.optional-dependencies]
 plotly = ["plotly>=5.20", "kaleido>=0.2"]
 altair = ["altair>=5"]
+seaborn = ["seaborn>=0.12"]
+great_tables = ["great_tables>=0.10"]
+scipy = ["scipy>=1.10"]
+all = ["plotly>=5.20", "kaleido>=0.2", "altair>=5", "seaborn>=0.12", "great_tables>=0.10", "scipy>=1.10"]
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

@@ -3,6 +3,8 @@ import polars as pl
 from great_tables import GT
 from typing import Union
 import numpy as np
+import time
+import sys
 
 # Optional scipy imports
 try:
@@ -172,6 +174,13 @@ def xray(
     Statistical tests require scipy. If not available, tests are skipped
     with informative messages.
     """
+    # Start timing for performance measurement
+    start_time = time.perf_counter()
+    
+    # Calculate DataFrame memory usage
+    memory_usage_bytes = df.estimated_size("bytes")
+    memory_usage_mb = memory_usage_bytes / 1024 / 1024
+    
     # Set default percentiles
     if percentiles is None:
         percentiles = [0.25, 0.5, 0.75]
@@ -346,7 +355,11 @@ def xray(
     # Build Great Tables object
     if expanded:
         # Full statistics mode
-        return _build_expanded_gt_table(summary_df, df.height, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern, locale)
+        # Calculate timing
+        end_time = time.perf_counter()
+        execution_time_ms = (end_time - start_time) * 1000
+        
+        return _build_expanded_gt_table(summary_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern, locale)
     else:
         # Minimal mode - only essential columns
         essential_cols = ['Column', 'Dtype', 'Count', 'Mean', 'Min', 'Median', 'Max', 
@@ -367,7 +380,12 @@ def xray(
         available_cols += quantile_cols
         
         minimal_df = summary_df.select(available_cols)
-        return _build_minimal_gt_table(minimal_df, df.height, corr_target, decimals, sep_mark, dec_mark, compact, pattern, locale)
+        
+        # Calculate timing
+        end_time = time.perf_counter()
+        execution_time_ms = (end_time - start_time) * 1000
+        
+        return _build_minimal_gt_table(minimal_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, decimals, sep_mark, dec_mark, compact, pattern, locale)
 
 
 # Helper Functions
@@ -629,7 +647,10 @@ def _count_outliers(series: pl.Series, method: str, bounds: list[float] | None) 
 
 def _build_minimal_gt_table(
     summary_df: pl.DataFrame, 
-    n_rows: int, 
+    n_rows: int,
+    n_cols: int,
+    memory_mb: float,
+    execution_ms: float,
     corr_target: str | None,
     decimals: int,
     sep_mark: str,
@@ -652,8 +673,8 @@ def _build_minimal_gt_table(
     gt_table = (
         GT(summary_df)
         .tab_header(
-            title="🔬 Data X-ray",
-            subtitle=f"Dataset: {n_rows:,} rows × {summary_df.height} columns"
+            title="🔬 DataFrame X-ray",
+            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({memory_mb:.1f} MB in memory) - X-rayed in {execution_ms:.0f} ms"
         )
         .tab_spanner(label="Basic Statistics", columns=basic_cols)
         .tab_spanner(label="Key Metrics", columns=essential_cols)
@@ -692,7 +713,10 @@ def _build_minimal_gt_table(
 
 def _build_expanded_gt_table(
     summary_df: pl.DataFrame, 
-    n_rows: int, 
+    n_rows: int,
+    n_cols: int,
+    memory_mb: float,
+    execution_ms: float,
     corr_target: str | None, 
     percentiles: list[float],
     decimals: int,
@@ -724,8 +748,8 @@ def _build_expanded_gt_table(
     gt_table = (
         GT(summary_df)
         .tab_header(
-            title="🔬 Comprehensive Data X-ray",
-            subtitle=f"Dataset: {n_rows:,} rows × {summary_df.height} columns • Deep Quality Analysis"
+            title="🔬 Comprehensive DataFrame X-ray",
+            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({memory_mb:.1f} MB in memory) - X-rayed in {execution_ms:.0f} ms • Deep Quality Analysis"
         )
         .tab_spanner(label="Basic Statistics", columns=basic_cols)
         .tab_spanner(label="Quantiles", columns=quantile_cols)

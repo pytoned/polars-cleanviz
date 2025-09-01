@@ -6,7 +6,7 @@ Tests all functions with various argument combinations to ensure they run withou
 import pytest
 import polars as pl
 import numpy as np
-import pl_cleanviz as plc
+import polarscope as plc
 from typing import Any, Dict, List
 import warnings
 

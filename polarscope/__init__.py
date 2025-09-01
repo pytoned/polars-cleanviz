@@ -16,4 +16,9 @@ __all__ = [
     "save_fig",
     "xray",            # Comprehensive data analysis and quality assessment
 ]
-__version__ = "0.4.1"
+__version__ = "1.0.0"
+
+# Package metadata
+__title__ = "polarscope"
+__description__ = "🔬 Professional data inspection and visualization toolkit for Polars"
+__author__ = "Anders & Co."
