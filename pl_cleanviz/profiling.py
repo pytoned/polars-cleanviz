@@ -91,10 +91,7 @@ class ProfileReport:
 
             # classify
             kind = "other"
-            # For newer Polars versions, check against numeric types directly
-            numeric_types = (pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64, 
-                            pl.Float32, pl.Float64, pl.Decimal)
-            if isinstance(dt, numeric_types):
+            if dt.is_numeric():
                 kind = "numeric"; num_cols.append(c)
             elif dt == pl.Boolean:
                 kind = "boolean"; bool_cols.append(c)
