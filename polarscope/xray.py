@@ -722,12 +722,12 @@ def _calculate_histogram_bins(series: pl.Series, n_bins: int | None = None) -> l
                 if iqr > 0:
                     bin_width = 2 * iqr / (n ** (1/3))
                     data_range = clean_series.max() - clean_series.min()
-                    n_bins = max(5, min(50, int(np.ceil(data_range / bin_width))))
+                    n_bins = max(5, min(20, int(np.ceil(data_range / bin_width))))
                 else:
                     n_bins = 10
         
-        # Ensure reasonable bounds
-        n_bins = max(5, min(30, n_bins))
+        # Ensure reasonable bounds for nanoplots (compact histograms)
+        n_bins = max(5, min(12, n_bins))
         
         # Calculate histogram using numpy
         values = clean_series.to_numpy()
