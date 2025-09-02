@@ -834,7 +834,7 @@ def _build_minimal_gt_table(
         gt_table = (
             gt_table
             .tab_spanner(label=f"Correlation with '{corr_target}'", columns=["Correlation"])
-            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark)
+            # Note: Skip fmt_number for Correlation since it contains both numbers and '-' string
             .cols_align(align="center", columns=["Correlation"])
         )
     
@@ -930,7 +930,7 @@ def _build_expanded_gt_table(
         gt_table = (
             gt_table
             .tab_spanner(label=f"Correlation with '{corr_target}'", columns=["Correlation"])
-            .fmt_number(columns=["Correlation"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark)
+            # Note: Skip fmt_number for Correlation since it contains both numbers and '-' string
             .cols_align(align="center", columns=["Correlation"])
         )
     
