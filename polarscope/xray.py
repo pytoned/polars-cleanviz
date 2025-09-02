@@ -85,6 +85,7 @@ def xray(
     include: str | list[str] | None = None,
     great_tables: bool = True,
     expanded: bool = False,
+    title: str | None = None,
     percentiles: list[float] | None = None,
     outlier_method: str = "iqr",
     outlier_bounds: list[float] | None = None,
@@ -129,6 +130,10 @@ def xray(
         If True, shows all available statistics. If False, shows only essential
         metrics: dtype, count, null_count, mean, std, min, 25%, 50%, 75%, max, 
         iqr, pct_missing, n_outliers, skew.
+    title : str | None, optional
+        Custom title for the Great Tables output. If None, uses default titles:
+        "🔬 DataFrame X-ray" (minimal) or "🔬 Expanded Statistics" (expanded).
+        Only applies when great_tables=True.
     percentiles : list[float] | None, optional
         Custom percentiles to calculate. Default: [0.25, 0.5, 0.75].
         Example: [0.1, 0.25, 0.5, 0.75, 0.9] for additional quantiles.
@@ -490,13 +495,13 @@ def xray(
         end_time = time.perf_counter()
         execution_time_ms = (end_time - start_time) * 1000
         
-        return _build_expanded_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern)
+        return _build_expanded_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern, title)
     else:
         # Calculate timing
         end_time = time.perf_counter()
         execution_time_ms = (end_time - start_time) * 1000
         
-        return _build_minimal_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, decimals, sep_mark, dec_mark, compact, pattern)
+        return _build_minimal_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, decimals, sep_mark, dec_mark, compact, pattern, title)
 
 
 # Helper Functions
@@ -765,7 +770,7 @@ def _count_outliers(series: pl.Series, method: str, bounds: list[float] | None) 
 
 
 def _build_minimal_gt_table(
-    summary_df: pl.DataFrame, 
+    summary_df: pl.DataFrame,
     n_rows: int,
     n_cols: int,
     memory_mb: float,
@@ -775,7 +780,8 @@ def _build_minimal_gt_table(
     sep_mark: str,
     dec_mark: str,
     compact: bool,
-    pattern: str | None
+    pattern: str | None,
+    title: str | None
 ) -> GT:
     """Build minimal Great Tables object."""
     # Determine column organization
@@ -789,10 +795,13 @@ def _build_minimal_gt_table(
     quality_cols = [str(c) for c in quality_cols if c in summary_df.columns]
     
     try:
+        # Use custom title or default
+        table_title = title if title is not None else "🔬 DataFrame X-ray"
+        
         gt_table = (
             GT(summary_df)
             .tab_header(
-                title="🔬 DataFrame X-ray",
+                title=table_title,
                 subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
             )
         )
@@ -842,7 +851,7 @@ def _build_minimal_gt_table(
 
 
 def _build_expanded_gt_table(
-    summary_df: pl.DataFrame, 
+    summary_df: pl.DataFrame,
     n_rows: int,
     n_cols: int,
     memory_mb: float,
@@ -853,7 +862,8 @@ def _build_expanded_gt_table(
     sep_mark: str,
     dec_mark: str,
     compact: bool,
-    pattern: str | None
+    pattern: str | None,
+    title: str | None
 ) -> GT:
     """Build expanded Great Tables object with all statistics."""
     # Organize columns by category
@@ -875,10 +885,13 @@ def _build_expanded_gt_table(
     quality_cols = [str(c) for c in quality_cols if c in summary_df.columns]
     
     try:
+        # Use custom title or default
+        table_title = title if title is not None else "🔬 Expanded Statistics"
+        
         gt_table = (
             GT(summary_df)
             .tab_header(
-                title="🔬 Expanded Statistics",
+                title=table_title,
                 subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
             )
         )
