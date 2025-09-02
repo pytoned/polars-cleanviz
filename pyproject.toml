@@ -1,7 +1,7 @@
 [project]
 name = "polarscope"
 version = "1.2.0"
-description = "🔬 Professional data inspection and visualization toolkit for Polars - featuring advanced X-ray analysis, comprehensive plotting, and data quality assessment."
+description = "🔬 Simple data inspection tools for Polars - basic X-ray analysis and utilities for DataFrames."
 authors = [{ name = "Anders & Co." }]
 requires-python = ">=3.9"
 dependencies = [
