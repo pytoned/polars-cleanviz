@@ -783,18 +783,22 @@ def _build_minimal_gt_table(
     essential_cols = ["IQR", "Pct_Missing", "N_Outliers", "skew"]
     quality_cols = []
     
-    # Filter to existing columns
-    basic_cols = [c for c in basic_cols if c in summary_df.columns]
-    essential_cols = [c for c in essential_cols if c in summary_df.columns] 
-    quality_cols = [c for c in quality_cols if c in summary_df.columns]
+    # Filter to existing columns and ensure all are strings
+    basic_cols = [str(c) for c in basic_cols if c in summary_df.columns]
+    essential_cols = [str(c) for c in essential_cols if c in summary_df.columns] 
+    quality_cols = [str(c) for c in quality_cols if c in summary_df.columns]
     
-    gt_table = (
-        GT(summary_df)
-        .tab_header(
-            title="🔬 DataFrame X-ray",
-            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
+    try:
+        gt_table = (
+            GT(summary_df)
+            .tab_header(
+                title="🔬 DataFrame X-ray",
+                subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
+            )
         )
-    )
+    except Exception as e:
+        # If GT creation fails, return a basic table without advanced formatting
+        raise ValueError(f"Great Tables formatting failed. Try using great_tables=False. Error: {e}")
     
     # Add spanners only for non-empty column groups
     if basic_cols:
@@ -854,7 +858,7 @@ def _build_expanded_gt_table(
     """Build expanded Great Tables object with all statistics."""
     # Organize columns by category
     basic_cols = ["Dtype", "Count", "Mean", "std", "Min", "Max"]
-    quantile_cols = [_percentile_to_label(p) for p in percentiles if _percentile_to_label(p) in summary_df.columns]
+    quantile_cols = [str(_percentile_to_label(p)) for p in percentiles if _percentile_to_label(p) in summary_df.columns]
     
     distribution_cols = ["IQR", "skew", "Kurtosis", "MAD"]
     count_cols = ["null_count", "Pct_Missing", "N_Unique", "Uniqueness_Ratio", "N_Zero", "Pct_Zero", "Pct_Pos", "Pct_Neg"]
@@ -862,21 +866,25 @@ def _build_expanded_gt_table(
     test_cols = ["Normality_Test", "Uniformity_Test"]
     quality_cols = ["Opt_Dtype", "Shakiness_Score", "Quality_Flag"]
     
-    # Filter to existing columns
-    basic_cols = [c for c in basic_cols if c in summary_df.columns]
-    distribution_cols = [c for c in distribution_cols if c in summary_df.columns]
-    count_cols = [c for c in count_cols if c in summary_df.columns]
-    outlier_cols = [c for c in outlier_cols if c in summary_df.columns]
-    test_cols = [c for c in test_cols if c in summary_df.columns]
-    quality_cols = [c for c in quality_cols if c in summary_df.columns]
+    # Filter to existing columns and ensure all are strings
+    basic_cols = [str(c) for c in basic_cols if c in summary_df.columns]
+    distribution_cols = [str(c) for c in distribution_cols if c in summary_df.columns]
+    count_cols = [str(c) for c in count_cols if c in summary_df.columns]
+    outlier_cols = [str(c) for c in outlier_cols if c in summary_df.columns]
+    test_cols = [str(c) for c in test_cols if c in summary_df.columns]
+    quality_cols = [str(c) for c in quality_cols if c in summary_df.columns]
     
-    gt_table = (
-        GT(summary_df)
-        .tab_header(
-            title="🔬 Expanded Statistics",
-            subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
+    try:
+        gt_table = (
+            GT(summary_df)
+            .tab_header(
+                title="🔬 Expanded Statistics",
+                subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
+            )
         )
-    )
+    except Exception as e:
+        # If GT creation fails, return a basic table without advanced formatting
+        raise ValueError(f"Great Tables formatting failed. Try using great_tables=False. Error: {e}")
     
     # Add spanners only for non-empty column groups
     if basic_cols:
