@@ -386,6 +386,10 @@ def xray(
             else:
                 col_stats['skew'] = None
             
+            # Histogram data for nanoplots
+            histogram_bins = _calculate_histogram_bins(series_clean)
+            col_stats['Histogram'] = histogram_bins
+            
             # Advanced statistics (expanded mode)
             if expanded:
                 # MAD (Median Absolute Deviation)
@@ -433,6 +437,9 @@ def xray(
             for stat in ['Mean', 'Std', 'Min', 'Max', 'IQR', 'N_Zero', 'Pct_Zero', 
                         'Pct_Pos', 'Pct_Neg', 'N_Outliers', 'Pct_Outliers']:
                 col_stats[stat] = None if stat in ['Mean', 'Std', 'IQR'] else 0
+            
+            # Non-numeric columns don't have histograms
+            col_stats['Histogram'] = []
             
             # For quantiles, set based on percentiles
             for p in percentiles:
@@ -691,6 +698,48 @@ def _test_uniformity(data: np.ndarray, test_type: str) -> str:
         return f"Error ({test_type}): {str(e)[:20]}"
 
 
+def _calculate_histogram_bins(series: pl.Series, n_bins: int | None = None) -> list[int]:
+    """Calculate histogram bin counts for a numeric series."""
+    try:
+        # Remove nulls for histogram calculation
+        clean_series = series.drop_nulls()
+        
+        if clean_series.len() == 0:
+            return []
+        
+        # Calculate optimal number of bins if not provided
+        if n_bins is None:
+            n = clean_series.len()
+            if n < 10:
+                n_bins = 5
+            elif n < 50:
+                n_bins = int(np.ceil(np.log2(n) + 1))  # Sturges' rule
+            else:
+                # Freedman-Diaconis rule
+                q75 = clean_series.quantile(0.75)
+                q25 = clean_series.quantile(0.25)
+                iqr = q75 - q25
+                if iqr > 0:
+                    bin_width = 2 * iqr / (n ** (1/3))
+                    data_range = clean_series.max() - clean_series.min()
+                    n_bins = max(5, min(50, int(np.ceil(data_range / bin_width))))
+                else:
+                    n_bins = 10
+        
+        # Ensure reasonable bounds
+        n_bins = max(5, min(30, n_bins))
+        
+        # Calculate histogram using numpy
+        values = clean_series.to_numpy()
+        counts, _ = np.histogram(values, bins=n_bins)
+        
+        return counts.tolist()
+        
+    except Exception:
+        # Return empty list if histogram calculation fails
+        return []
+
+
 def _calculate_shakiness_score(
     col_stats: dict, 
     missing_threshold: float,
@@ -847,6 +896,27 @@ def _build_minimal_gt_table(
             .cols_align(align="center", columns=["Correlation"])
         )
     
+    # Add histogram nanoplots for numeric columns (if Histogram column exists)
+    if "Histogram" in summary_df.columns:
+        try:
+            from great_tables import nanoplot_options
+            gt_table = gt_table.fmt_nanoplot(
+                columns="Histogram",
+                plot_type="bar",
+                options=nanoplot_options(
+                    data_bar_stroke_width=0,  # No gaps between bars (like histogram)
+                    data_bar_fill_color="#4A90E2",
+                    show_data_line=False,
+                    show_data_area=False
+                )
+            )
+        except ImportError:
+            # If nanoplot_options not available, use basic nanoplot
+            gt_table = gt_table.fmt_nanoplot(columns="Histogram", plot_type="bar")
+        except Exception:
+            # If nanoplot formatting fails, continue without it
+            pass
+    
     return gt_table
 
 
@@ -870,7 +940,7 @@ def _build_expanded_gt_table(
     basic_cols = ["Dtype", "Count", "Mean", "std", "Min", "Max"]
     quantile_cols = [str(_percentile_to_label(p)) for p in percentiles if _percentile_to_label(p) in summary_df.columns]
     
-    distribution_cols = ["IQR", "skew", "Kurtosis", "MAD"]
+    distribution_cols = ["IQR", "skew", "Kurtosis", "MAD", "Histogram"]
     count_cols = ["null_count", "Pct_Missing", "N_Unique", "Uniqueness_Ratio", "N_Zero", "Pct_Zero", "Pct_Pos", "Pct_Neg"]
     outlier_cols = ["N_Outliers", "Pct_Outliers"]
     test_cols = ["Normality_Test", "Uniformity_Test"]
@@ -946,5 +1016,26 @@ def _build_expanded_gt_table(
             # Note: Skip fmt_number for Correlation since it contains both numbers and '-' string
             .cols_align(align="center", columns=["Correlation"])
         )
+    
+    # Add histogram nanoplots for numeric columns (if Histogram column exists)
+    if "Histogram" in summary_df.columns:
+        try:
+            from great_tables import nanoplot_options
+            gt_table = gt_table.fmt_nanoplot(
+                columns="Histogram",
+                plot_type="bar",
+                options=nanoplot_options(
+                    data_bar_stroke_width=0,  # No gaps between bars (like histogram)
+                    data_bar_fill_color="#4A90E2",
+                    show_data_line=False,
+                    show_data_area=False
+                )
+            )
+        except ImportError:
+            # If nanoplot_options not available, use basic nanoplot
+            gt_table = gt_table.fmt_nanoplot(columns="Histogram", plot_type="bar")
+        except Exception:
+            # If nanoplot formatting fails, continue without it
+            pass
     
     return gt_table
