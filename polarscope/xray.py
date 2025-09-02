@@ -386,9 +386,20 @@ def xray(
             else:
                 col_stats['skew'] = None
             
-            # Histogram data for nanoplots
-            histogram_bins = _calculate_histogram_bins(series_clean)
-            col_stats['Histogram'] = histogram_bins
+            # Histogram data for nanoplots (use sampled raw data, not bin counts)
+            # Great Tables nanoplots work better with raw data values
+            if n_valid > 0:
+                # Sample up to 50 values for nanoplot (keeps it manageable)
+                sample_size = min(50, n_valid)
+                if n_valid <= sample_size:
+                    histogram_data = series_clean.to_list()
+                else:
+                    # Sample evenly across the data
+                    indices = np.linspace(0, n_valid - 1, sample_size, dtype=int)
+                    histogram_data = [series_clean.to_list()[i] for i in indices]
+                col_stats['Histogram'] = histogram_data
+            else:
+                col_stats['Histogram'] = []
             
             # Advanced statistics (expanded mode)
             if expanded:
