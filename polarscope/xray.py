@@ -345,8 +345,12 @@ def xray(
             
             mean_val = float(series_clean.mean())
             std_val = float(series_clean.std()) if n_valid > 1 else None
-            min_val = float(series_clean.min())
-            max_val = float(series_clean.max())
+            try:
+                min_val = float(series_clean.min())
+                max_val = float(series_clean.max())
+            except (ValueError, TypeError):
+                # Handle cases where min/max operations fail with mixed types
+                min_val = max_val = 0.0
             
             col_stats['Mean'] = round(mean_val, 3)
             col_stats['std'] = round(std_val, 3) if std_val is not None else None
@@ -549,8 +553,12 @@ def _suggest_optimal_dtype(series: pl.Series, current_dtype) -> str:
         return "Bool"
     
     if current_dtype.is_integer():
-        min_val = int(series.min())
-        max_val = int(series.max())
+        try:
+            min_val = int(series.min())
+            max_val = int(series.max())
+        except (ValueError, TypeError) as e:
+            # Handle cases where min/max return non-integer types
+            return str(current_dtype)
         
         # Check if fits in smaller integer types
         if -128 <= min_val <= 127 and -128 <= max_val <= 127:
@@ -808,7 +816,7 @@ def _build_minimal_gt_table(
             **({"pattern": pattern} if pattern is not None else {})
         )
         .fmt_number(columns=["Pct_Missing"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark)
-        .cols_align(align="center", columns=basic_cols + essential_cols + quality_cols)
+        .cols_align(align="center", columns=[str(c) for c in (basic_cols + essential_cols + quality_cols)])
         .cols_align(align="left", columns=["Column"])
         .tab_options(
             table_font_size="13px",
@@ -900,8 +908,8 @@ def _build_expanded_gt_table(
         .fmt_number(columns=["skew", "Kurtosis"], decimals=3, sep_mark=sep_mark, dec_mark=dec_mark)
         .fmt_number(columns=["Pct_Missing", "Pct_Zero", "Pct_Pos", "Pct_Neg", "Pct_Outliers"], decimals=1, sep_mark=sep_mark, dec_mark=dec_mark)
         .fmt_number(columns=["Uniqueness_Ratio"], decimals=4, sep_mark=sep_mark, dec_mark=dec_mark)
-        .cols_align(align="center", columns=basic_cols + quantile_cols + distribution_cols + count_cols + outlier_cols + ["Shakiness_Score"])
-        .cols_align(align="left", columns=["Column", "Opt_Dtype", "Quality_Flag"] + test_cols)
+        .cols_align(align="center", columns=[str(c) for c in (basic_cols + quantile_cols + distribution_cols + count_cols + outlier_cols + ["Shakiness_Score"])])
+        .cols_align(align="left", columns=[str(c) for c in (["Column", "Opt_Dtype", "Quality_Flag"] + test_cols)])
         .tab_options(
             table_font_size="12px",
             heading_background_color="#f8f9fa", 
