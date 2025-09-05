@@ -31,17 +31,12 @@ def _check_scipy_availability():
 def _format_memory_usage(df: pl.DataFrame) -> str:
     """Format memory usage with appropriate units using Polars unit parameter."""
     try:
-        # Try MB first to determine scale
-        memory_mb = df.estimated_size(unit='mb')
-        
-        if memory_mb >= 1000:  # >= 1 GB
-            memory_gb = df.estimated_size(unit='gb')
-            return f"{memory_gb:.1f} GB"
-        elif memory_mb >= 1.0:  # >= 1 MB
-            return f"{memory_mb:.1f} MB"
+        if df.estimated_size(unit='mb') >= 1000:  # >= 1 GB
+            return f"{df.estimated_size(unit='gb'):.1f} GB"
+        elif df.estimated_size(unit='mb') >= 1.0:  # >= 1 MB
+            return f"{df.estimated_size(unit='mb'):.1f} MB"
         else:  # < 1 MB, use KB
-            memory_kb = df.estimated_size(unit='kb')
-            return f"{memory_kb:.1f} KB"
+            return f"{df.estimated_size(unit='kb'):.1f} KB"
     except Exception:
         # Fallback for older Polars versions
         try:
@@ -335,18 +330,21 @@ def xray(
             'Pct_Missing': round(pct_missing, 2)
         }
         
-        # Basic counts and ratios - handle object dtypes safely
+        # Basic counts and ratios - use approx for large datasets
+        is_large_dataset = len(series) > 300000
         try:
-            n_unique = series.n_unique()
+            # Use approximate count for large datasets (>300k rows) for better performance
+            if is_large_dataset:
+                n_unique = series.approx_n_unique()
+            else:
+                n_unique = series.n_unique()
         except Exception:
-            # Fallback for object dtypes that don't support arg_unique
-            try:
-                n_unique = len(series.unique())
-            except Exception:
-                # Ultimate fallback - count via groupby
-                n_unique = series.drop_nulls().value_counts().height
+            # Fallback - count via groupby (more reliable for problematic dtypes)
+            n_unique = series.drop_nulls().value_counts().height
         
-        col_stats['N_Unique'] = n_unique
+        # Use appropriate column name based on dataset size
+        n_unique_col = 'N_Unique(approx)' if is_large_dataset else 'N_Unique'
+        col_stats[n_unique_col] = n_unique
         col_stats['Uniqueness_Ratio'] = round(n_unique / n_total, 4) if n_total > 0 else 0
         
         if is_numeric and n_valid > 0:
@@ -625,13 +623,14 @@ def _suggest_optimal_dtype(series: pl.Series, current_dtype) -> str:
     elif current_dtype == pl.String:
         # Check if categorical would be better
         try:
-            n_unique = series.n_unique()
+            # Use approximate count for large datasets (>300k rows)
+            if len(series) > 300000:
+                n_unique = series.approx_n_unique()
+            else:
+                n_unique = series.n_unique()
         except Exception:
-            # Fallback for object dtypes
-            try:
-                n_unique = len(series.unique())
-            except Exception:
-                n_unique = series.drop_nulls().value_counts().height
+            # Fallback for problematic dtypes
+            n_unique = series.drop_nulls().value_counts().height
         
         n_total = len(series)
         if n_unique / n_total < 0.5:  # Less than 50% unique
@@ -788,7 +787,9 @@ def _calculate_shakiness_score(
     
     # Constant/quasi-constant
     uniqueness_ratio = col_stats.get('Uniqueness_Ratio', 1)
-    if uniqueness_ratio == 0 or col_stats.get('N_Unique', 0) == 1:
+    # Handle both exact and approximate N_Unique column names
+    n_unique_val = col_stats.get('N_Unique', col_stats.get('N_Unique(approx)', 0))
+    if uniqueness_ratio == 0 or n_unique_val == 1:
         score += 1
     elif uniqueness_ratio < (1 - constant_threshold):  # Mode percentage > threshold
         score += 1
@@ -971,8 +972,11 @@ def _build_expanded_gt_table(
     basic_cols = ["Dtype", "Count", "Mean", "std", "Min", "Max"]
     quantile_cols = [str(_percentile_to_label(p)) for p in percentiles if _percentile_to_label(p) in summary_df.columns]
     
+    # Handle both exact and approximate N_Unique column names
+    n_unique_cols = [c for c in ["N_Unique", "N_Unique(approx)"] if c in summary_df.columns]
+    
     distribution_cols = ["IQR", "skew", "Kurtosis", "MAD", "Histogram"]
-    count_cols = ["null_count", "Pct_Missing", "N_Unique", "Uniqueness_Ratio", "N_Zero", "Pct_Zero", "Pct_Pos", "Pct_Neg"]
+    count_cols = ["null_count", "Pct_Missing"] + n_unique_cols + ["Uniqueness_Ratio", "N_Zero", "Pct_Zero", "Pct_Pos", "Pct_Neg"]
     outlier_cols = ["N_Outliers", "Pct_Outliers"]
     test_cols = ["Normality_Test", "Uniformity_Test"]
     quality_cols = ["Opt_Dtype", "Shakiness_Score", "Quality_Flag"]
@@ -1018,7 +1022,7 @@ def _build_expanded_gt_table(
     
     gt_table = (
         gt_table
-        .fmt_integer(columns=["Count", "null_count", "N_Unique", "N_Zero", "N_Outliers", "Shakiness_Score"], sep_mark=sep_mark)
+        .fmt_integer(columns=["Count", "null_count"] + n_unique_cols + ["N_Zero", "N_Outliers", "Shakiness_Score"], sep_mark=sep_mark)
         .fmt_number(
             columns=["Mean", "std", "Min", "Max", "IQR", "MAD"] + quantile_cols, 
             decimals=decimals, 
