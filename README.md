@@ -106,4 +106,10 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
+## 🙏 Acknowledgments
+
+Inspired by [`klib`](https://github.com/akanz1/klib) and built with [`great_tables`](https://github.com/posit-dev/great-tables).
+
+---
+
 **🔬 A simple tool for basic Polars data inspection.**

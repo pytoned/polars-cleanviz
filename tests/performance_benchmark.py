@@ -1,5 +1,5 @@
 """
-Performance benchmark for pl_cleanviz library.
+Performance benchmark for Polarscope library.
 Inspired by klib's performance testing approach but adapted for Polars and our specific functions.
 """
 

@@ -491,7 +491,7 @@ def xray(
     else:
         # Minimal mode - only essential columns (user specified)
         essential_cols = ['Column', 'Dtype', 'Count', 'null_count', 'Mean', 'std', 'Min', 
-                         '25%', '50%', '75%', 'Max', 'IQR', 'Pct_Missing', 'N_Outliers', 'skew']
+                         '25%', '50%', '75%', 'Max', 'IQR', 'Pct_Missing', 'N_Outliers', 'skew', 'Histogram']
         
         # Only include the essential columns that exist in the dataframe
         available_cols = [c for c in essential_cols if c in summary_df.columns]
@@ -846,7 +846,7 @@ def _build_minimal_gt_table(
     """Build minimal Great Tables object."""
     # Determine column organization
     basic_cols = ["Dtype", "Count", "null_count", "Mean", "std", "Min", "25%", "50%", "75%", "Max"]
-    essential_cols = ["IQR", "Pct_Missing", "N_Outliers", "skew"]
+    essential_cols = ["IQR", "Pct_Missing", "N_Outliers", "skew", "Histogram"]
     quality_cols = []
     
     # Filter to existing columns and ensure all are strings
