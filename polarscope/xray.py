@@ -386,18 +386,30 @@ def xray(
             else:
                 col_stats['skew'] = None
             
-            # Histogram data for nanoplots (use sampled raw data, not bin counts)
-            # Great Tables nanoplots work better with raw data values
+            # Histogram data for nanoplots (calculate proper bin counts)
             if n_valid > 0:
-                # Sample up to 50 values for nanoplot (keeps it manageable)
-                sample_size = min(50, n_valid)
-                if n_valid <= sample_size:
-                    histogram_data = series_clean.to_list()
-                else:
-                    # Sample evenly across the data
-                    indices = np.linspace(0, n_valid - 1, sample_size, dtype=int)
-                    histogram_data = [series_clean.to_list()[i] for i in indices]
-                col_stats['Histogram'] = histogram_data
+                try:
+                    # Calculate optimal number of bins (max 12 for nanoplots)
+                    n_bins = min(12, max(5, int(np.sqrt(n_valid))))
+                    
+                    # Get data range
+                    min_val = float(series_clean.min())
+                    max_val = float(series_clean.max())
+                    
+                    # Create bin edges
+                    if min_val == max_val:
+                        # All values are the same
+                        histogram_data = [n_valid]
+                    else:
+                        bin_edges = np.linspace(min_val, max_val, n_bins + 1)
+                        # Calculate histogram using numpy
+                        counts, _ = np.histogram(series_clean.to_numpy(), bins=bin_edges)
+                        histogram_data = counts.tolist()
+                    
+                    col_stats['Histogram'] = histogram_data
+                except Exception:
+                    # Fallback if histogram calculation fails
+                    col_stats['Histogram'] = []
             else:
                 col_stats['Histogram'] = []
             
