@@ -28,13 +28,32 @@ def _check_scipy_availability():
     return SCIPY_AVAILABLE
 
 
-def _format_memory_usage(memory_mb: float) -> str:
-    """Format memory usage with appropriate units (KB or MB)."""
-    if memory_mb < 1.0:
-        memory_kb = memory_mb * 1024
-        return f"{memory_kb:.1f} KB"
-    else:
-        return f"{memory_mb:.1f} MB"
+def _format_memory_usage(df: pl.DataFrame) -> str:
+    """Format memory usage with appropriate units using Polars unit parameter."""
+    try:
+        # Try MB first to determine scale
+        memory_mb = df.estimated_size(unit='mb')
+        
+        if memory_mb >= 1000:  # >= 1 GB
+            memory_gb = df.estimated_size(unit='gb')
+            return f"{memory_gb:.1f} GB"
+        elif memory_mb >= 1.0:  # >= 1 MB
+            return f"{memory_mb:.1f} MB"
+        else:  # < 1 MB, use KB
+            memory_kb = df.estimated_size(unit='kb')
+            return f"{memory_kb:.1f} KB"
+    except Exception:
+        # Fallback for older Polars versions
+        try:
+            memory_bytes = df.estimated_size()
+            memory_mb = memory_bytes / 1024 / 1024
+            if memory_mb < 1.0:
+                memory_kb = memory_mb * 1024
+                return f"{memory_kb:.1f} KB"
+            else:
+                return f"{memory_mb:.1f} MB"
+        except Exception:
+            return "Unknown"
 
 
 def _get_columns_to_analyze(df: pl.DataFrame, include: str | list[str] | None) -> list[str]:
@@ -260,18 +279,7 @@ def xray(
     # Start timing for performance measurement
     start_time = time.perf_counter()
     
-    # Calculate DataFrame memory usage - handle version compatibility
-    try:
-        memory_usage_bytes = df.estimated_size("bytes")
-        memory_usage_mb = memory_usage_bytes / 1024 / 1024
-    except Exception:
-        # Fallback for older Polars versions or compatibility issues
-        try:
-            memory_usage_bytes = df.estimated_size()
-            memory_usage_mb = memory_usage_bytes / 1024 / 1024
-        except Exception:
-            # Ultimate fallback - estimate based on shape and dtype
-            memory_usage_mb = df.shape[0] * df.shape[1] * 8 / 1024 / 1024  # Rough estimate
+    # Memory usage will be calculated in _format_memory_usage() using unit parameter
     
     # Set default percentiles
     if percentiles is None:
@@ -525,13 +533,13 @@ def xray(
         end_time = time.perf_counter()
         execution_time_ms = (end_time - start_time) * 1000
         
-        return _build_expanded_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern, title)
+        return _build_expanded_gt_table(final_df, df.height, df.width, df, execution_time_ms, corr_target, percentiles, decimals, sep_mark, dec_mark, compact, pattern, title)
     else:
         # Calculate timing
         end_time = time.perf_counter()
         execution_time_ms = (end_time - start_time) * 1000
         
-        return _build_minimal_gt_table(final_df, df.height, df.width, memory_usage_mb, execution_time_ms, corr_target, decimals, sep_mark, dec_mark, compact, pattern, title)
+        return _build_minimal_gt_table(final_df, df.height, df.width, df, execution_time_ms, corr_target, decimals, sep_mark, dec_mark, compact, pattern, title)
 
 
 # Helper Functions
@@ -845,7 +853,7 @@ def _build_minimal_gt_table(
     summary_df: pl.DataFrame,
     n_rows: int,
     n_cols: int,
-    memory_mb: float,
+    df: pl.DataFrame,
     execution_ms: float,
     corr_target: str | None,
     decimals: int,
@@ -874,7 +882,7 @@ def _build_minimal_gt_table(
             GT(summary_df)
             .tab_header(
                 title=table_title,
-                subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
+                subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(df)} in memory) - X-rayed in {execution_ms:.0f} ms"
             )
         )
     except Exception as e:
@@ -947,7 +955,7 @@ def _build_expanded_gt_table(
     summary_df: pl.DataFrame,
     n_rows: int,
     n_cols: int,
-    memory_mb: float,
+    df: pl.DataFrame,
     execution_ms: float,
     corr_target: str | None, 
     percentiles: list[float],
@@ -985,7 +993,7 @@ def _build_expanded_gt_table(
             GT(summary_df)
             .tab_header(
                 title=table_title,
-                subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(memory_mb)} in memory) - X-rayed in {execution_ms:.0f} ms"
+                subtitle=f"Dataset: {n_rows:,} rows × {n_cols} columns ({_format_memory_usage(df)} in memory) - X-rayed in {execution_ms:.0f} ms"
             )
         )
     except Exception as e:
