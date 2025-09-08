@@ -681,25 +681,25 @@ def corr_heatmap(
     Basic correlation heatmap:
     
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({
     ...     'price': [100, 200, 150, 300], 
     ...     'volume': [10, 20, 15, 30],
     ...     'rating': [4.5, 3.8, 4.2, 4.9]
     ... })
-    >>> plc.corr_heatmap(df)
+    >>> ps.corr_heatmap(df)
     
     Show only strong correlations:
     
-    >>> plc.corr_heatmap(df, split="high", threshold=0.7)
+    >>> ps.corr_heatmap(df, split="high", threshold=0.7)
     
     Target correlation analysis:
     
-    >>> plc.corr_heatmap(df, target="price", method="spearman")
+    >>> ps.corr_heatmap(df, target="price", method="spearman")
     
     Publication-ready static plot:
     
-    >>> plc.corr_heatmap(df, backend="seaborn", annotate=True, 
+    >>> ps.corr_heatmap(df, backend="seaborn", annotate=True, 
     ...                  width=800, height=600)
 
     See Also
@@ -885,9 +885,9 @@ def dist_plot(
     Examples
     --------
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({'age': [25, 30, 35, 40, 45, 50]})
-    >>> plc.dist_plot(df, column="age", bins=10, backend="plotly")
+    >>> ps.dist_plot(df, column="age", bins=10, backend="plotly")
     """
     cols = _numeric_columns(df)
     if column is None:
@@ -1003,9 +1003,9 @@ def missingval_plot(
     Examples
     --------
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({'a': [1, None, 3], 'b': [4, 5, None], 'c': [7, 8, 9]})
-    >>> plc.missingval_plot(df, normalize=True, backend="plotly")
+    >>> ps.missingval_plot(df, normalize=True, backend="plotly")
     """
     cols = list(df.columns)
     if not cols:
@@ -1085,9 +1085,9 @@ def cat_plot(
     Examples
     --------
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({'category': ['A', 'B', 'A', 'C', 'B', 'A']})
-    >>> plc.cat_plot(df, top=3, bottom=2)
+    >>> ps.cat_plot(df, top=3, bottom=2)
     """
     # Get categorical columns (string/categorical types)
     cat_cols = [c for c, dt in zip(df.columns, df.dtypes) 
@@ -1189,9 +1189,9 @@ def convert_datatypes(
     Examples
     --------
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({'a': [1, 2, 3], 'b': ['x', 'y', 'x']})
-    >>> df_opt = plc.convert_datatypes(df)
+    >>> df_opt = ps.convert_datatypes(df)
     """
     result = df.clone()
     
@@ -1277,10 +1277,10 @@ def drop_missing(
     Examples
     --------
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({'a': [1, None, 3], 'b': [1, 2, None]})
-    >>> plc.drop_missing(df, axis="rows")  # Drop rows with any nulls
-    >>> plc.drop_missing(df, axis="columns", thresh=0.8)  # Keep cols with >80% data
+    >>> ps.drop_missing(df, axis="rows")  # Drop rows with any nulls
+    >>> ps.drop_missing(df, axis="columns", thresh=0.8)  # Keep cols with >80% data
     """
     if axis == "rows":
         if subset:
@@ -1371,9 +1371,9 @@ def corr_plot(
     Examples
     --------
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({'a': [1,2,3], 'b': [2,4,6], 'c': [1,3,2]})
-    >>> plc.corr_plot(df, interactive=True, clustered=True)
+    >>> ps.corr_plot(df, interactive=True, clustered=True)
     """
     # Get numeric columns
     if columns is None:
@@ -1480,9 +1480,9 @@ def data_cleaning(
     Examples
     --------
     >>> import polars as pl
-    >>> import pl_cleanviz as plc
+    >>> import polarscope as ps
     >>> df = pl.DataFrame({'a': [1, 1, None, 100], 'b': ['x', 'y', 'x', 'x']})
-    >>> df_clean = plc.data_cleaning(df)
+    >>> df_clean = ps.data_cleaning(df)
     """
     result = df.clone()
     

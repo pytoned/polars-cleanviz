@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 
 
 class PerformanceBenchmark:
-    """Performance benchmarking suite for pl_cleanviz functions."""
+    """Performance benchmarking suite for polarscope functions."""
     
     def __init__(self):
         self.results: Dict[str, Dict[str, Any]] = {}
@@ -130,7 +130,7 @@ class PerformanceBenchmark:
                     continue  # Skip if no numeric columns
                 
                 print(f"  📊 {dataset_name} - {config_name}")
-                result = self.measure_performance(plc.xray, df, **config)
+                result = self.measure_performance(ps.xray, df, **config)
                 self.results[f'xray_{dataset_name}'][config_name] = result
     
     def benchmark_plotting_functions(self, datasets: Dict[str, pl.DataFrame]) -> None:
@@ -138,21 +138,21 @@ class PerformanceBenchmark:
         print("\n📈 Benchmarking plotting functions...")
         
         plotting_functions = [
-            ("corr_heatmap", plc.corr_heatmap, [
+            ("corr_heatmap", ps.corr_heatmap, [
                 ({}, "default"),
                 ({"backend": "plotly"}, "plotly"),
                 ({"backend": "seaborn"}, "seaborn"),
                 ({"backend": "altair"}, "altair"),
                 ({"annotate": False}, "no_annotations")
             ]),
-            ("dist_plot", plc.dist_plot, [
+            ("dist_plot", ps.dist_plot, [
                 ({}, "default"),
                 ({"backend": "plotly"}, "plotly"),
                 ({"backend": "seaborn"}, "seaborn"),
                 ({"backend": "altair"}, "altair"),
                 ({"bins": 50}, "many_bins")
             ]),
-            ("missingval_plot", plc.missingval_plot, [
+            ("missingval_plot", ps.missingval_plot, [
                 ({}, "default"),
                 ({"backend": "plotly"}, "plotly"),
                 ({"backend": "seaborn"}, "seaborn"),
@@ -182,17 +182,17 @@ class PerformanceBenchmark:
         print("\n🔧 Benchmarking data processing functions...")
         
         processing_functions = [
-            ("convert_datatypes", plc.convert_datatypes, [
+            ("convert_datatypes", ps.convert_datatypes, [
                 ({}, "default"),
                 ({"str_to_cat": False}, "no_categoricals"),
                 ({"downcast_ints": False, "downcast_floats": False}, "no_downcasting")
             ]),
-            ("drop_missing", plc.drop_missing, [
+            ("drop_missing", ps.drop_missing, [
                 ({"axis": "rows"}, "drop_rows"),
                 ({"axis": "columns"}, "drop_columns"),
                 ({"axis": "rows", "thresh": 0.5}, "thresh_50pct")
             ]),
-            ("data_cleaning", plc.data_cleaning, [
+            ("data_cleaning", ps.data_cleaning, [
                 ({}, "default"),
                 ({"optimize_dtypes": False}, "no_optimization"),
                 ({"remove_duplicates": False}, "keep_duplicates"),
@@ -211,7 +211,7 @@ class PerformanceBenchmark:
     
     def run_full_benchmark(self) -> None:
         """Run complete performance benchmark suite."""
-        print("🚀 Starting pl_cleanviz Performance Benchmark")
+        print("🚀 Starting polarscope Performance Benchmark")
         print("=" * 60)
         
         # Create test datasets of varying sizes

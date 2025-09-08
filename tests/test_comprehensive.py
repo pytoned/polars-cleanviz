@@ -1,5 +1,5 @@
 """
-Comprehensive test suite for pl_cleanviz library.
+Comprehensive test suite for polarscope library.
 Tests all functions with various argument combinations to ensure they run without errors.
 """
 
@@ -86,11 +86,11 @@ class TestXrayFunction:
         df = TestDataGenerator.create_basic_numeric_df(50)
         
         # Basic call
-        result = plc.xray(df)
+        result = ps.xray(df)
         assert result is not None
         
         # DataFrame output
-        result_df = plc.xray(df, great_tables=False)
+        result_df = ps.xray(df, great_tables=False)
         assert isinstance(result_df, pl.DataFrame)
         assert result_df.height > 0
     
@@ -98,17 +98,17 @@ class TestXrayFunction:
         """Test xray expanded mode."""
         df = TestDataGenerator.create_mixed_df(50)
         
-        result = plc.xray(df, expanded=True)
+        result = ps.xray(df, expanded=True)
         assert result is not None
         
         # With all statistical tests
-        result = plc.xray(df, expanded=True, normality_test="anderson")
+        result = ps.xray(df, expanded=True, normality_test="anderson")
         assert result is not None
         
-        result = plc.xray(df, expanded=True, normality_test="ks")
+        result = ps.xray(df, expanded=True, normality_test="ks")
         assert result is not None
         
-        result = plc.xray(df, expanded=True, uniformity_test="chi2")
+        result = ps.xray(df, expanded=True, uniformity_test="chi2")
         assert result is not None
     
     def test_xray_custom_percentiles(self):
@@ -116,15 +116,15 @@ class TestXrayFunction:
         df = TestDataGenerator.create_basic_numeric_df(50)
         
         # Custom percentiles
-        result = plc.xray(df, percentiles=[0.1, 0.25, 0.5, 0.75, 0.9])
+        result = ps.xray(df, percentiles=[0.1, 0.25, 0.5, 0.75, 0.9])
         assert result is not None
         
         # Single percentile
-        result = plc.xray(df, percentiles=[0.5])
+        result = ps.xray(df, percentiles=[0.5])
         assert result is not None
         
         # Many percentiles
-        result = plc.xray(df, percentiles=[0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95])
+        result = ps.xray(df, percentiles=[0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95])
         assert result is not None
     
     def test_xray_outlier_methods(self):
@@ -132,15 +132,15 @@ class TestXrayFunction:
         df = TestDataGenerator.create_problematic_df(50)
         
         # IQR method (default)
-        result = plc.xray(df, outlier_method="iqr")
+        result = ps.xray(df, outlier_method="iqr")
         assert result is not None
         
         # Percentile method
-        result = plc.xray(df, outlier_method="percentile", outlier_bounds=[0.05, 0.95])
+        result = ps.xray(df, outlier_method="percentile", outlier_bounds=[0.05, 0.95])
         assert result is not None
         
         # Z-score method
-        result = plc.xray(df, outlier_method="zscore")
+        result = ps.xray(df, outlier_method="zscore")
         assert result is not None
     
     def test_xray_correlation_target(self):
@@ -149,10 +149,10 @@ class TestXrayFunction:
         
         # Test each numeric column as target
         for col in ['price', 'volume', 'rating', 'score']:
-            result = plc.xray(df, corr_target=col)
+            result = ps.xray(df, corr_target=col)
             assert result is not None
             
-            result = plc.xray(df, corr_target=col, expanded=True)
+            result = ps.xray(df, corr_target=col, expanded=True)
             assert result is not None
     
     def test_xray_formatting_options(self):
@@ -161,26 +161,26 @@ class TestXrayFunction:
         
         # Test decimals
         for decimals in [1, 2, 3, 4]:
-            result = plc.xray(df, decimals=decimals)
+            result = ps.xray(df, decimals=decimals)
             assert result is not None
         
         # Test compact mode
-        result = plc.xray(df, compact=True)
+        result = ps.xray(df, compact=True)
         assert result is not None
         
         # Test different separators
-        result = plc.xray(df, sep_mark=" ", dec_mark=",")
+        result = ps.xray(df, sep_mark=" ", dec_mark=",")
         assert result is not None
         
         # Test pattern
-        result = plc.xray(df, pattern="[{x}]")
+        result = ps.xray(df, pattern="[{x}]")
         assert result is not None
         
         # Test locale
-        result = plc.xray(df, locale="fr")
+        result = ps.xray(df, locale="fr")
         assert result is not None
         
-        result = plc.xray(df, locale="de")
+        result = ps.xray(df, locale="de")
         assert result is not None
     
     def test_xray_quality_thresholds(self):
@@ -188,7 +188,7 @@ class TestXrayFunction:
         df = TestDataGenerator.create_problematic_df(50)
         
         # Strict thresholds
-        result = plc.xray(
+        result = ps.xray(
             df,
             missing_threshold=0.1,
             constant_threshold=0.95,
@@ -200,7 +200,7 @@ class TestXrayFunction:
         assert result is not None
         
         # Lenient thresholds
-        result = plc.xray(
+        result = ps.xray(
             df,
             missing_threshold=0.8,
             constant_threshold=0.99,
@@ -221,31 +221,31 @@ class TestPlottingFunctions:
         
         # Test all backends
         for backend in ["plotly", "seaborn", "altair"]:
-            result = plc.corr_heatmap(df, backend=backend)
+            result = ps.corr_heatmap(df, backend=backend)
             assert result is not None
             
             # With annotations off
-            result = plc.corr_heatmap(df, backend=backend, annotate=False)
+            result = ps.corr_heatmap(df, backend=backend, annotate=False)
             assert result is not None
             
             # With custom dimensions
-            result = plc.corr_heatmap(df, backend=backend, width=600, height=500)
+            result = ps.corr_heatmap(df, backend=backend, width=600, height=500)
             assert result is not None
         
         # Test correlation methods
         for method in ["pearson", "spearman"]:
-            result = plc.corr_heatmap(df, method=method)
+            result = ps.corr_heatmap(df, method=method)
             assert result is not None
         
         # Test with target column
-        result = plc.corr_heatmap(df, target="price")
+        result = ps.corr_heatmap(df, target="price")
         assert result is not None
         
         # Test with threshold and split
-        result = plc.corr_heatmap(df, threshold=0.3, split="pos")
+        result = ps.corr_heatmap(df, threshold=0.3, split="pos")
         assert result is not None
         
-        result = plc.corr_heatmap(df, threshold=0.3, split="neg")
+        result = ps.corr_heatmap(df, threshold=0.3, split="neg")
         assert result is not None
     
     def test_dist_plot(self):
@@ -255,19 +255,19 @@ class TestPlottingFunctions:
         # Test all backends
         for backend in ["plotly", "seaborn", "altair"]:
             # Auto-select column
-            result = plc.dist_plot(df, backend=backend)
+            result = ps.dist_plot(df, backend=backend)
             assert result is not None
             
             # Specific column
-            result = plc.dist_plot(df, column="price", backend=backend)
+            result = ps.dist_plot(df, column="price", backend=backend)
             assert result is not None
             
             # Custom bins
-            result = plc.dist_plot(df, column="price", bins=20, backend=backend)
+            result = ps.dist_plot(df, column="price", bins=20, backend=backend)
             assert result is not None
             
             # Custom dimensions
-            result = plc.dist_plot(df, column="price", width=600, height=400, backend=backend)
+            result = ps.dist_plot(df, column="price", width=600, height=400, backend=backend)
             assert result is not None
     
     def test_missingval_plot(self):
@@ -277,18 +277,18 @@ class TestPlottingFunctions:
         
         # Test all backends
         for backend in ["plotly", "seaborn", "altair"]:
-            result = plc.missingval_plot(df, backend=backend)
+            result = ps.missingval_plot(df, backend=backend)
             assert result is not None
             
             # With normalization
-            result = plc.missingval_plot(df, backend=backend, normalize=True)
+            result = ps.missingval_plot(df, backend=backend, normalize=True)
             assert result is not None
             
             # Different sort orders
-            result = plc.missingval_plot(df, backend=backend, sort="asc")
+            result = ps.missingval_plot(df, backend=backend, sort="asc")
             assert result is not None
             
-            result = plc.missingval_plot(df, backend=backend, sort="desc")
+            result = ps.missingval_plot(df, backend=backend, sort="desc")
             assert result is not None
     
     def test_cat_plot(self):
@@ -297,15 +297,15 @@ class TestPlottingFunctions:
         
         # Test all backends
         for backend in ["plotly", "seaborn", "altair"]:
-            result = plc.cat_plot(df, backend=backend)
+            result = ps.cat_plot(df, backend=backend)
             assert result is not None
             
             # Custom top/bottom
-            result = plc.cat_plot(df, top=5, bottom=5, backend=backend)
+            result = ps.cat_plot(df, top=5, bottom=5, backend=backend)
             assert result is not None
             
             # Custom dimensions
-            result = plc.cat_plot(df, width=700, height=500, backend=backend)
+            result = ps.cat_plot(df, width=700, height=500, backend=backend)
             assert result is not None
     
     def test_corr_plot(self):
@@ -314,22 +314,22 @@ class TestPlottingFunctions:
         
         # Test all backends
         for backend in ["plotly", "seaborn", "altair"]:
-            result = plc.corr_plot(df, backend=backend)
+            result = ps.corr_plot(df, backend=backend)
             assert result is not None
             
             # Interactive vs non-interactive
-            result = plc.corr_plot(df, interactive=True, backend=backend)
+            result = ps.corr_plot(df, interactive=True, backend=backend)
             assert result is not None
             
-            result = plc.corr_plot(df, interactive=False, backend=backend)
+            result = ps.corr_plot(df, interactive=False, backend=backend)
             assert result is not None
             
             # With clustering
-            result = plc.corr_plot(df, clustered=True, backend=backend)
+            result = ps.corr_plot(df, clustered=True, backend=backend)
             assert result is not None
             
             # Different methods
-            result = plc.corr_plot(df, method="spearman", backend=backend)
+            result = ps.corr_plot(df, method="spearman", backend=backend)
             assert result is not None
 
 
@@ -341,12 +341,12 @@ class TestDataProcessingFunctions:
         df = TestDataGenerator.create_mixed_df(100)
         
         # Basic conversion
-        result = plc.convert_datatypes(df)
+        result = ps.convert_datatypes(df)
         assert isinstance(result, pl.DataFrame)
         assert result.height == df.height
         
         # Custom parameters
-        result = plc.convert_datatypes(
+        result = ps.convert_datatypes(
             df,
             max_cardinality=10,
             categorical_threshold=0.3,
@@ -361,21 +361,21 @@ class TestDataProcessingFunctions:
         df = TestDataGenerator.create_problematic_df(100)
         
         # Drop missing rows
-        result = plc.drop_missing(df, axis="rows")
+        result = ps.drop_missing(df, axis="rows")
         assert isinstance(result, pl.DataFrame)
         assert result.height <= df.height
         
         # Drop missing columns
-        result = plc.drop_missing(df, axis="columns")
+        result = ps.drop_missing(df, axis="columns")
         assert isinstance(result, pl.DataFrame)
         assert result.width <= df.width
         
         # With threshold
-        result = plc.drop_missing(df, axis="rows", thresh=0.5)
+        result = ps.drop_missing(df, axis="rows", thresh=0.5)
         assert isinstance(result, pl.DataFrame)
         
         # With subset
-        result = plc.drop_missing(df, axis="rows", subset=["missing_heavy"])
+        result = ps.drop_missing(df, axis="rows", subset=["missing_heavy"])
         assert isinstance(result, pl.DataFrame)
     
     def test_data_cleaning(self):
@@ -383,11 +383,11 @@ class TestDataProcessingFunctions:
         df = TestDataGenerator.create_problematic_df(100)
         
         # Basic cleaning
-        result = plc.data_cleaning(df)
+        result = ps.data_cleaning(df)
         assert isinstance(result, pl.DataFrame)
         
         # Custom parameters
-        result = plc.data_cleaning(
+        result = ps.data_cleaning(
             df,
             drop_missing_thresh=0.8,
             optimize_dtypes=False,
@@ -412,7 +412,7 @@ class TestUtilityFunctions:
             'Column__With__Double__Underscores': [10, 11, 12]
         })
         
-        result = plc.clean_column_names(df)
+        result = ps.clean_column_names(df)
         assert isinstance(result, pl.DataFrame)
         assert result.height == df.height
         
@@ -427,7 +427,7 @@ class TestUtilityFunctions:
         df = TestDataGenerator.create_basic_numeric_df(30)
         
         # Create a figure
-        fig = plc.corr_heatmap(df, backend="plotly")
+        fig = ps.corr_heatmap(df, backend="plotly")
         
         # Test saving (we won't actually save to avoid file system issues)
         # This would test the function signature and basic validation
@@ -439,7 +439,7 @@ class TestUtilityFunctions:
             
             with tempfile.TemporaryDirectory() as tmpdir:
                 filepath = os.path.join(tmpdir, "test_plot.png")
-                # Test would save here: plc.save_fig(fig, filepath)
+                # Test would save here: ps.save_fig(fig, filepath)
                 pass
         except Exception:
             pass  # Skip file system tests in this context
@@ -454,7 +454,7 @@ class TestEdgeCases:
         
         # These should handle empty DataFrames gracefully
         try:
-            result = plc.xray(df_empty)
+            result = ps.xray(df_empty)
         except Exception:
             pass  # Expected to handle gracefully
     
@@ -462,10 +462,10 @@ class TestEdgeCases:
         """Test functions with single column DataFrame."""
         df_single = pl.DataFrame({'single_col': [1, 2, 3, 4, 5]})
         
-        result = plc.xray(df_single)
+        result = ps.xray(df_single)
         assert result is not None
         
-        result = plc.dist_plot(df_single, column='single_col')
+        result = ps.dist_plot(df_single, column='single_col')
         assert result is not None
     
     def test_all_missing_column(self):
@@ -475,10 +475,10 @@ class TestEdgeCases:
             'some_data': [1, 2, 3, 4, 5, None, None, None, None, None]
         })
         
-        result = plc.xray(df_missing)
+        result = ps.xray(df_missing)
         assert result is not None
         
-        result = plc.missingval_plot(df_missing)
+        result = ps.missingval_plot(df_missing)
         assert result is not None
     
     def test_constant_column(self):
@@ -488,7 +488,7 @@ class TestEdgeCases:
             'variable': np.random.normal(0, 1, 100)
         })
         
-        result = plc.xray(df_constant)
+        result = ps.xray(df_constant)
         assert result is not None
     
     def test_invalid_parameters(self):
@@ -497,23 +497,23 @@ class TestEdgeCases:
         
         # Invalid backend
         with pytest.raises(ValueError):
-            plc.corr_heatmap(df, backend="invalid_backend")
+            ps.corr_heatmap(df, backend="invalid_backend")
         
         with pytest.raises(ValueError):
-            plc.dist_plot(df, backend="invalid_backend")
+            ps.dist_plot(df, backend="invalid_backend")
         
         # Invalid outlier method
         with pytest.raises(ValueError):
-            plc.xray(df, outlier_method="invalid_method")
+            ps.xray(df, outlier_method="invalid_method")
         
         # Invalid correlation target
         with pytest.raises(ValueError):
-            plc.xray(df, corr_target="nonexistent_column")
+            ps.xray(df, corr_target="nonexistent_column")
 
 
 def run_comprehensive_tests():
     """Run all comprehensive tests."""
-    print("🧪 Running Comprehensive Test Suite for pl_cleanviz")
+    print("🧪 Running Comprehensive Test Suite for polarscope")
     print("=" * 60)
     
     test_classes = [
